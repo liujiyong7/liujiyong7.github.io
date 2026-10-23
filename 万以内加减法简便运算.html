@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万以内加减法简便运算 · 趣味小课堂</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --sub: #64748b;
+    --accent: #2563eb;
+    --accent2: #7c3aed;
+    --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", system-ui, sans-serif;
+    color: var(--ink);
+    padding: 20px 12px 60px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(120deg, #2563eb, #7c3aed);
+    color: #fff;
+    border-radius: 20px;
+    padding: 26px 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, .25);
+  }
+  header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: 2px; }
+  header p { margin: 0; font-size: 15px; opacity: .95; }
+
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px 18px 20px;
+    margin-top: 18px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+    border: 1px solid var(--line);
+  }
+  .label { font-weight: 700; margin-bottom: 10px; color: var(--sub); }
+
+  .sec-title { margin: 0 0 4px; font-size: 22px; }
+  .sec-sub { margin: 0 0 12px; color: var(--sub); font-size: 15px; }
+
+  /* 方法选择 */
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .m-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 12px 8px;
+    border-radius: 14px;
+    border: 2px solid var(--line);
+    background: #f8fafc;
+    cursor: pointer; font-family: inherit;
+    transition: all .15s;
+  }
+  .m-btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .m-btn.active { background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .35); }
+  .m-btn .ico { font-size: 24px; }
+  .m-btn .nm { font-size: 15px; font-weight: 800; }
+  .m-btn .tg { font-size: 12px; opacity: .85; }
+
+  /* 难度选择 */
+  .level-row { display: flex; gap: 10px; }
+  .level-btn {
+    flex: 1; padding: 12px 8px; border-radius: 12px;
+    border: 2px solid var(--line); background: #f8fafc;
+    font-size: 15px; font-weight: 700; cursor: pointer; color: var(--sub);
+    font-family: inherit; transition: all .15s;
+  }
+  .level-btn:hover { transform: translateY(-2px); border-color: #f59e0b; }
+  .level-btn.active { background: #f59e0b; border-color: #f59e0b; color: #fff;
+    box-shadow: 0 6px 16px rgba(245, 158, 11, .35); }
+
+  /* 演示 */
+  .demo-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .demo-title { font-size: 20px; font-weight: 800; }
+  .pill {
+    display: inline-block; background: #fef3c7; color: #92400e;
+    border-radius: 999px; padding: 5px 13px; font-weight: 700; font-size: 13px;
+  }
+
+  .chain-box {
+    background: linear-gradient(180deg, #f8fbff, #eef4ff);
+    border: 1px solid #dbe7ff;
+    border-radius: 16px;
+    padding: 18px 22px;
+    min-height: 120px;
+  }
+  .chain-line {
+    font-size: 26px; font-weight: 800; line-height: 1.6;
+    display: flex; align-items: baseline;
+    word-break: break-all;
+  }
+  .chain-line .eq { color: #94a3b8; margin-right: 10px; font-weight: 800; }
+  .chain-line.current { color: var(--accent); }
+  .chain-line.current .eq { color: var(--accent); }
+  .chain-line.enter { animation: fade .3s ease; }
+  .hl-b { color: #2563eb; }
+  .hl-g { color: #16a34a; }
+  .hl-r { color: #dc2626; }
+  .hl-p { color: #7c3aed; }
+
+  .note-box {
+    margin-top: 12px; text-align: center;
+    font-size: 16px; color: var(--sub); min-height: 26px;
+  }
+  .note-box b { color: var(--ink); }
+
+  .dots { display: flex; gap: 7px; justify-content: center; margin-top: 14px; }
+  .dot2 { width: 11px; height: 11px; border-radius: 50%; background: #dbe3ee; transition: all .2s; }
+  .dot2.on { background: var(--accent); transform: scale(1.35); }
+
+  .step-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+  .step-btns button {
+    padding: 12px 18px; border-radius: 12px;
+    border: none; font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: all .15s;
+  }
+  #btn-next { background: var(--accent); color: #fff; }
+  #btn-prev { background: #eef2ff; color: var(--accent); }
+  #btn-new { background: #10b981; color: #fff; }
+  .step-btns button:hover { transform: translateY(-2px); }
+  .step-btns button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .fade { animation: fade .3s ease; }
+  @keyframes fade { from { opacity: .2; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* 口诀 */
+  .saying { text-align: center; font-size: 17px; line-height: 2; }
+  .saying b { color: var(--accent2); }
+
+  /* 练习 */
+  .quiz h2 { margin: 0 0 8px; font-size: 20px; }
+  .quiz-tag { text-align: center; margin-bottom: 6px; }
+  .quiz-q { text-align: center; font-size: 26px; font-weight: 800; margin: 12px 0 4px; word-break: break-all; }
+  .quiz-row { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .quiz-row input {
+    width: 120px; height: 54px; text-align: center;
+    font-size: 26px; font-weight: 800;
+    border: 2px solid var(--line); border-radius: 12px;
+  }
+  .quiz-row button {
+    padding: 12px 20px; border-radius: 12px; border: none;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  #btn-check { background: var(--accent); color: #fff; }
+  #btn-newq { background: #f1f5f9; color: #475569; }
+  .quiz-result { margin-top: 12px; text-align: center; font-size: 17px; font-weight: 700; min-height: 24px; }
+  .quiz-result.good { color: #16a34a; }
+  .quiz-result.bad { color: #dc2626; }
+
+  footer { text-align: center; margin-top: 20px; color: var(--sub); font-size: 15px; }
+  footer b { color: var(--accent2); }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 万以内加减法</span>
+</div>
+<div class="wrap">
+  <header>
+    <h1>🧮 万以内的加减法简便运算</h1>
+    <p>用「凑整」和「运算定律」，让又长又难的计算变得又快又准！</p>
+  </header>
+
+  <section class="card">
+    <div class="label">① 选一种方法</div>
+    <div class="method-grid" id="methodGrid"></div>
+  </section>
+
+  <section class="card">
+    <div class="label">② 题目难度</div>
+    <div class="level-row" id="levelRow"></div>
+  </section>
+
+  <section class="card">
+    <div class="demo-head">
+      <span class="demo-title" id="demoTitle"></span>
+      <span class="pill" id="demoPill"></span>
+    </div>
+    <div class="chain-box" id="chain"></div>
+    <div class="note-box" id="note"></div>
+    <div class="dots" id="dots"></div>
+    <div class="step-btns">
+      <button id="btn-prev">◀ 上一步</button>
+      <button id="btn-next">下一步 ▶</button>
+      <button id="btn-new">换一题</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="sec-title">📌 小口诀</h2>
+    <p class="saying">
+      加减简便看<b>凑整</b>，交换结合<b>配好对</b>；<br>
+      连减<b>合并</b>一起减，拆数补差<b>找基准</b>；<br>
+      带符号<b>搬家</b>不丢号，去括号时<b>减号要变号</b>。
+    </p>
+  </section>
+
+  <section class="card quiz">
+    <h2>🎯 小练习</h2>
+    <div class="quiz-tag" id="quizTag"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-row">
+      <input id="quizInput" type="number" placeholder="?" inputmode="numeric">
+      <button id="btn-check">检查</button>
+      <button id="btn-newq">换一题</button>
+    </div>
+    <div id="quizResult" class="quiz-result"></div>
+  </section>
+
+  <footer>算得巧，<b>算得快</b>！先想“能不能凑整”，再动手～</footer>
+</div>
+
+<script>
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function hl(txt, cls) { return '<span class="hl-' + cls + '">' + txt + '</span>'; }
+
+const LEVEL_NAMES = ['100 以内', '1000 以内', '10000 以内'];
+const UNIT = [0, 10, 100, 1000];   // 每档的“整”的单位：整十 / 整百 / 整千
+const MAX  = [0, 99, 999, 9999];   // 每档最大数
+function unit(l) { return UNIT[l]; }
+function maxNum(l) { return MAX[l]; }
+
+/* ---------- 各种方法：返回 {steps:[{line,note}], answer, question} ----------
+   steps[0] 是原式，后面每一步都是“=”后面的一行，层层推理到底 */
+
+function genCuiZheng(l) {
+  const U = unit(l), T = maxNum(l), R = rand(2, 8) * U, d = rand(1, 9);
+  if (Math.random() < 0.5) {
+    const a = R - d, b = rand(U, T), s = R + b, ans = a + b;
+    return {
+      pill: '把接近整十整百整千的数看成整数，多退少补',
+      steps: [
+        { line: a + ' + ' + b, note: '思路：' + a + ' 很接近 ' + R + '，先加 ' + R + '，再退 ' + d },
+        { line: '(' + hl(R, 'g') + ' − ' + hl(d, 'r') + ') + ' + b, note: '把 ' + a + ' 换成 ' + R + ' − ' + d + '（' + a + ' = ' + R + ' − ' + d + '）' },
+        { line: hl(R, 'g') + ' + ' + b + ' − ' + hl(d, 'r'), note: '去掉括号，把 −' + d + ' 挪到后面，先算 ' + R + ' + ' + b },
+        { line: hl(s, 'g') + ' − ' + hl(d, 'r'), note: R + ' + ' + b + ' = ' + s },
+        { line: hl(ans, 'p'), note: s + ' − ' + d + ' = ' + ans + '，完成 ✅' }
+      ],
+      answer: ans, question: a + ' + ' + b
+    };
+  } else {
+    const c = R - d, a = rand(R + U, T), s = a - R, ans = a - c;
+    return {
+      pill: '把接近整十整百整千的数看成整数，多退少补',
+      steps: [
+        { line: a + ' − ' + c, note: '思路：' + c + ' 很接近 ' + R + '，先减 ' + R + '，再把多减的补回来' },
+        { line: a + ' − (' + hl(R, 'g') + ' − ' + hl(d, 'r') + ')', note: '把 ' + c + ' 换成 ' + R + ' − ' + d + '（' + c + ' = ' + R + ' − ' + d + '）' },
+        { line: a + ' − ' + hl(R, 'g') + ' + ' + hl(d, 'r'), note: '去括号：−( ' + R + ' − ' + d + ' ) = −' + R + ' + ' + d },
+        { line: hl(s, 'g') + ' + ' + hl(d, 'r'), note: a + ' − ' + R + ' = ' + s },
+        { line: hl(ans, 'p'), note: s + ' + ' + d + ' = ' + ans + '，完成 ✅' }
+      ],
+      answer: ans, question: a + ' − ' + c
+    };
+  }
+}
+
+function genJiehe(l) {
+  const U = unit(l), T = maxNum(l), R = rand(3, 9) * U;
+  const x = rand(U, R - U), y = R - x, z = rand(U, T), ans = R + z;
+  return {
+    pill: '交换位置 + 结合，把能凑整的数先加起来',
+    steps: [
+      { line: hl(x, 'b') + ' + ' + z + ' + ' + hl(y, 'b'), note: '思路：' + x + ' 和 ' + y + ' 是“好朋友”，加起来正好 ' + R },
+      { line: x + ' + ' + hl(y, 'b') + ' + ' + z, note: '交换律：把 ' + y + ' 和 ' + z + ' 换位置，让好朋友挨着' },
+      { line: hl('(' + x + ' + ' + y + ')', 'g') + ' + ' + z, note: '结合律：用括号把好朋友括起来，先算它们' },
+      { line: hl(R, 'g') + ' + ' + z, note: x + ' + ' + y + ' = ' + R },
+      { line: hl(ans, 'p'), note: R + ' + ' + z + ' = ' + ans + '，完成 ✅' }
+    ],
+    answer: ans, question: x + ' + ' + z + ' + ' + y
+  };
+}
+
+function genLianJian(l) {
+  const U = unit(l), T = maxNum(l), R = rand(3, 8) * U;
+  const b = rand(U, R - U), c = R - b, a = R + rand(U, T - R), ans = a - R;
+  return {
+    pill: '连续减两个数 = 一次减掉它们的和',
+    steps: [
+      { line: a + ' − ' + hl(b, 'b') + ' − ' + hl(c, 'b'), note: '思路：' + b + ' + ' + c + ' = ' + R + ' 能凑整，把两次减合并成一次' },
+      { line: a + ' − ' + hl('(' + b + ' + ' + c + ')', 'g'), note: '减法的性质：连续减 = 一起减' },
+      { line: a + ' − ' + hl(R, 'g'), note: b + ' + ' + c + ' = ' + R },
+      { line: hl(ans, 'p'), note: a + ' − ' + R + ' = ' + ans + '，完成 ✅' }
+    ],
+    answer: ans, question: a + ' − ' + b + ' − ' + c
+  };
+}
+
+function genChai(l) {
+  const U = unit(l), T = maxNum(l), R = rand(2, 8) * U, k = rand(1, 4), near = R - k;
+  if (Math.random() < 0.5) {
+    const a = rand(U, T - R), s = a + R, ans = a + near;
+    return {
+      pill: '把接近整十整百整千的数拆成“整 ± 一点”',
+      steps: [
+        { line: a + ' + ' + hl(near, 'b'), note: '思路：' + near + ' = ' + R + ' − ' + k + '，很接近 ' + R },
+        { line: a + ' + (' + hl(R, 'g') + ' − ' + hl(k, 'r') + ')', note: '把 ' + near + ' 拆成 ' + R + ' − ' + k },
+        { line: a + ' + ' + hl(R, 'g') + ' − ' + hl(k, 'r'), note: '去括号：+ ( ' + R + ' − ' + k + ' ) = + ' + R + ' − ' + k },
+        { line: hl(s, 'g') + ' − ' + hl(k, 'r'), note: a + ' + ' + R + ' = ' + s },
+        { line: hl(ans, 'p'), note: s + ' − ' + k + ' = ' + ans + '，完成 ✅' }
+      ],
+      answer: ans, question: a + ' + ' + near
+    };
+  } else {
+    const a = rand(R + U, T), s = a - R, ans = a - near;
+    return {
+      pill: '把接近整十整百整千的数拆成“整 ± 一点”',
+      steps: [
+        { line: a + ' − ' + hl(near, 'b'), note: '思路：' + near + ' = ' + R + ' − ' + k + '，很接近 ' + R },
+        { line: a + ' − (' + hl(R, 'g') + ' − ' + hl(k, 'r') + ')', note: '把 ' + near + ' 拆成 ' + R + ' − ' + k },
+        { line: a + ' − ' + hl(R, 'g') + ' + ' + hl(k, 'r'), note: '去括号：−( ' + R + ' − ' + k + ' ) = −' + R + ' + ' + k },
+        { line: hl(s, 'g') + ' + ' + hl(k, 'r'), note: a + ' − ' + R + ' = ' + s },
+        { line: hl(ans, 'p'), note: s + ' + ' + k + ' = ' + ans + '，完成 ✅' }
+      ],
+      answer: ans, question: a + ' − ' + near
+    };
+  }
+}
+
+function genJizhun(l) {
+  const U = unit(l), base = rand(3, 7) * U;
+  const sets = [[-2, -1, 0, 1, 2], [-3, -1, 0, 1, 3]];
+  const offs = sets[rand(0, 1)];
+  const nums = offs.map(o => base + o), ans = base * 5;
+  const offTxt = offs.map(o => o < 0 ? '(' + o + ')' : String(o)).join(' + ');
+  const baseForm = offs.map(o => o === 0 ? String(base) : (o > 0 ? '(' + base + ' + ' + o + ')' : '(' + base + ' − ' + (-o) + ')')).join(' + ');
+  return {
+    pill: '几个数都接近同一个数，先乘再加(减)差',
+    steps: [
+      { line: nums.join(' + '), note: '思路：这些数都接近 ' + base + '，以 ' + base + ' 为基准' },
+      { line: baseForm, note: '每个数都写成「基准 ± 差」' },
+      { line: hl(base + ' × 5', 'g') + ' + (' + offTxt + ')', note: '5 个 ' + base + ' 加一起，差单独加' },
+      { line: hl(ans, 'g') + ' + ' + hl(0, 'g'), note: offTxt + ' = 0（差正好抵消）' },
+      { line: hl(ans, 'p'), note: '基准和 + 差的和 = ' + ans + '，完成 ✅' }
+    ],
+    answer: ans, question: nums.join(' + ')
+  };
+}
+
+function genBanJia(l) {
+  const U = unit(l), T = maxNum(l), R = rand(2, 8) * U, a = rand(R + U, T), c = a - R, b = rand(U, T);
+  const ans = R + b;
+  return {
+    pill: '交换位置时，每个数都要带着前面的符号走',
+    steps: [
+      { line: hl(a, 'b') + ' + ' + b + ' − ' + hl(c, 'b'), note: '思路：' + a + ' − ' + c + ' = ' + R + ' 能凑整，把它们放到一起' },
+      { line: a + ' − ' + hl(c, 'b') + ' + ' + b, note: '带符号搬家：−' + c + ' 跟着 ' + c + ' 一起搬到前面' },
+      { line: hl(R, 'g') + ' + ' + b, note: a + ' − ' + c + ' = ' + R },
+      { line: hl(ans, 'p'), note: R + ' + ' + b + ' = ' + ans + '，完成 ✅' }
+    ],
+    answer: ans, question: a + ' + ' + b + ' − ' + c
+  };
+}
+
+function genQuKuo(l) {
+  const U = unit(l), T = maxNum(l), R = rand(2, 7) * U, a = rand(R + 2 * U, T), b = a - R, c = rand(U, 2 * U - 1);
+  const ans = R + c;
+  return {
+    pill: '减号后面去括号要变号，加号后面不变号',
+    steps: [
+      { line: a + ' − ' + hl('(' + b + ' − ' + c + ')', 'b'), note: '思路：减号后面有括号，去掉括号时里面要变号' },
+      { line: a + ' − ' + b + ' + ' + hl(c, 'r'), note: '去括号：−( ' + b + ' − ' + c + ' ) = −' + b + ' + ' + c + '（减号变加号）' },
+      { line: hl(R, 'g') + ' + ' + c, note: a + ' − ' + b + ' = ' + R },
+      { line: hl(ans, 'p'), note: R + ' + ' + c + ' = ' + ans + '，完成 ✅' }
+    ],
+    answer: ans, question: a + ' − (' + b + ' − ' + c + ')'
+  };
+}
+
+/* ---------- 方法注册 ---------- */
+const METHODS = [
+  { name: '凑整法', ico: '🎯', tag: '多退少补', gen: genCuiZheng },
+  { name: '交换·结合律', ico: '🤝', tag: '找好朋友', gen: genJiehe },
+  { name: '连减的简便', ico: '➖', tag: '一起减', gen: genLianJian },
+  { name: '拆数凑整法', ico: '✂️', tag: '整±一点', gen: genChai },
+  { name: '基准数法', ico: '📏', tag: '先乘再加差', gen: genJizhun },
+  { name: '带符号搬家', ico: '🚚', tag: '符号跟着走', gen: genBanJia },
+  { name: '去括号·添括号', ico: '🧩', tag: '减号要变号', gen: genQuKuo }
+];
+
+let level = 2;       // 1=100以内 2=1000以内 3=10000以内
+let curMethod = 0, stepIdx = 0, cur = null;
+
+function buildMethodGrid() {
+  document.getElementById('methodGrid').innerHTML = METHODS.map((m, i) =>
+    '<button class="m-btn' + (i === curMethod ? ' active' : '') + '" onclick="selectMethod(' + i + ')">' +
+      '<span class="ico">' + m.ico + '</span>' +
+      '<span class="nm">' + m.name + '</span>' +
+      '<span class="tg">' + m.tag + '</span>' +
+    '</button>'
+  ).join('');
+}
+
+function buildLevelRow() {
+  document.getElementById('levelRow').innerHTML = LEVEL_NAMES.map((n, i) =>
+    '<button class="level-btn' + ((i + 1) === level ? ' active' : '') + '" onclick="setLevel(' + (i + 1) + ')">' + n + '</button>'
+  ).join('');
+}
+
+function setLevel(l) {
+  level = l;
+  cur = METHODS[curMethod].gen(level);
+  stepIdx = 0;
+  buildLevelRow();
+  renderDemo();
+  newQuiz();
+}
+
+function selectMethod(i) {
+  curMethod = i;
+  cur = METHODS[i].gen(level);
+  stepIdx = 0;
+  buildMethodGrid();
+  renderDemo();
+}
+
+function renderDemo() {
+  document.getElementById('demoTitle').textContent = METHODS[curMethod].ico + ' ' + METHODS[curMethod].name;
+  document.getElementById('demoPill').textContent = METHODS[curMethod].pill;
+
+  const chain = document.getElementById('chain');
+  let html = '';
+  for (let i = 0; i <= stepIdx; i++) {
+    const isLast = (i === stepIdx);
+    const prefix = i === 0 ? '' : '<span class="eq">=</span>';
+    html += '<div class="chain-line' + (isLast ? ' current enter' : '') + '">' + prefix + cur.steps[i].line + '</div>';
+  }
+  chain.innerHTML = html;
+
+  document.getElementById('note').innerHTML = '💡 ' + cur.steps[stepIdx].note;
+
+  document.getElementById('dots').innerHTML = cur.steps.map((_, i) =>
+    '<span class="dot2' + (i === stepIdx ? ' on' : '') + '"></span>'
+  ).join('');
+
+  document.getElementById('btn-prev').disabled = (stepIdx === 0);
+  document.getElementById('btn-next').disabled = (stepIdx === cur.steps.length - 1);
+}
+
+/* ---------- 小练习 ---------- */
+let quiz = null;
+
+function newQuiz() {
+  const mi = rand(0, METHODS.length - 1);
+  quiz = METHODS[mi].gen(level);
+  document.getElementById('quizTag').innerHTML = '<span class="pill">💡 试试「' + METHODS[mi].ico + ' ' + METHODS[mi].name + '」 · ' + LEVEL_NAMES[level - 1] + '</span>';
+  document.getElementById('quizQ').textContent = quiz.question + ' = ?';
+  document.getElementById('quizInput').value = '';
+  const r = document.getElementById('quizResult');
+  r.textContent = ''; r.className = 'quiz-result';
+}
+
+function checkQuiz() {
+  const r = document.getElementById('quizResult');
+  const ans = parseInt(document.getElementById('quizInput').value, 10);
+  if (Number.isNaN(ans)) { r.textContent = '请先填一个数哦～'; r.className = 'quiz-result bad'; return; }
+  if (ans === quiz.answer) {
+    r.textContent = '✅ 答对啦！答案是 ' + quiz.answer + '。真棒！';
+    r.className = 'quiz-result good';
+  } else {
+    r.textContent = '❌ 再想想～ 先看能不能“凑整”。正确答案是 ' + quiz.answer + '。';
+    r.className = 'quiz-result bad';
+  }
+}
+
+/* ---------- 事件与启动 ---------- */
+document.getElementById('btn-prev').onclick = () => { if (stepIdx > 0) { stepIdx--; renderDemo(); } };
+document.getElementById('btn-next').onclick = () => { if (stepIdx < cur.steps.length - 1) { stepIdx++; renderDemo(); } };
+document.getElementById('btn-new').onclick = () => { cur = METHODS[curMethod].gen(level); stepIdx = 0; renderDemo(); };
+document.getElementById('btn-check').onclick = checkQuiz;
+document.getElementById('btn-newq').onclick = newQuiz;
+document.getElementById('quizInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkQuiz(); });
+
+buildMethodGrid();
+buildLevelRow();
+selectMethod(0);
+newQuiz();
+</script>
+</body>
+</html>

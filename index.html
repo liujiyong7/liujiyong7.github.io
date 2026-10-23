@@ -1,9 +1,362 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>我的个人网站</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="二年级小朋友的在线学习乐园：数学、语文、英语、科学趣味练习小游戏。">
+<title>二年级学习乐园 · 数学 语文 英语 科学</title>
+<style>
+  :root{
+    --math:#2563eb;    --math-b:#dbeafe;
+    --chinese:#e11d48; --chinese-b:#ffe4e6;
+    --english:#16a34a; --english-b:#dcfce7;
+    --science:#7c3aed; --science-b:#ede9fe;
+    --ink:#0f172a; --sub:#64748b;
+    --card:#ffffff; --line:#e5e7eb;
+    --r:22px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; min-height:100vh; color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+    background:#f2f7ff;
+    background-image:radial-gradient(1100px 520px at 12% -10%, #dbeafe 0%, transparent 60%),
+                     radial-gradient(900px 480px at 92% 8%, #ede9fe 0%, transparent 62%),
+                     radial-gradient(900px 520px at 50% 108%, #dcfce7 0%, transparent 60%);
+    background-attachment:fixed;
+    padding:26px 16px 56px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:1120px; margin:0 auto;}
+
+  /* ===== 顶部 ===== */
+  .hero{text-align:center; margin:14px 0 26px;}
+  .badge{
+    display:inline-flex; align-items:center; gap:8px; background:#fff; color:var(--sub);
+    border:1px solid var(--line); border-radius:999px; padding:6px 16px; font-size:13.5px; font-weight:700;
+    box-shadow:0 4px 14px rgba(15,23,42,.06);
+  }
+  .hero h1{
+    margin:14px 0 8px; font-size:clamp(28px,5.4vw,44px); line-height:1.25; letter-spacing:1px;
+  }
+  .hero h1 .em{
+    background:linear-gradient(100deg,#2563eb,#7c3aed 40%,#16a34a 75%,#f59e0b);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p{margin:0 auto; max-width:640px; color:var(--sub); font-size:clamp(14px,2.6vw,16.5px); line-height:1.8;}
+  .statRow{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:18px;}
+  .stat{
+    background:#fff; border:1px solid var(--line); border-radius:16px; padding:8px 16px; min-width:92px;
+    box-shadow:0 6px 16px rgba(15,23,42,.06);
+  }
+  .stat b{display:block; font-size:22px; line-height:1.2;}
+  .stat span{font-size:12px; color:var(--sub); font-weight:700;}
+
+  /* ===== 最近学习 ===== */
+  .recent{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
+    background:rgba(255,255,255,.72); border:1px dashed #bfdbfe; border-radius:18px;
+    padding:12px 14px; margin:0 auto 22px; max-width:1000px;
+  }
+  .recent .lab{font-size:13.5px; font-weight:800; color:#4338ca; flex:0 0 auto;}
+  .recent .chip{
+    display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line);
+    border-radius:999px; padding:6px 13px; font-size:13.5px; font-weight:700; color:var(--ink);
+    text-decoration:none; box-shadow:0 3px 10px rgba(15,23,42,.05); transition:.15s;
+  }
+  .recent .chip:hover{transform:translateY(-2px); border-color:#93c5fd;}
+  .recent.hide{display:none;}
+
+  /* ===== 工具条 ===== */
+  .toolbar{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; margin-bottom:22px;
+  }
+  .tabs{display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+  .tab{
+    border:2px solid #fff; background:rgba(255,255,255,.85); color:var(--sub);
+    border-radius:999px; padding:9px 16px; font-size:14.5px; font-weight:800; cursor:pointer;
+    font-family:inherit; box-shadow:0 4px 12px rgba(15,23,42,.06); transition:.15s;
+  }
+  .tab:hover{transform:translateY(-2px);}
+  .tab .n{font-size:12px; opacity:.75; margin-left:3px;}
+  .tab.on{color:#fff; border-color:transparent; box-shadow:0 8px 20px rgba(15,23,42,.16);}
+  .tab[data-s="all"].on{background:linear-gradient(135deg,#334155,#0f172a);}
+  .tab[data-s="math"].on{background:linear-gradient(135deg,var(--math),#60a5fa);}
+  .tab[data-s="chinese"].on{background:linear-gradient(135deg,#be123c,var(--chinese));}
+  .tab[data-s="english"].on{background:linear-gradient(135deg,#15803d,var(--english));}
+  .tab[data-s="science"].on{background:linear-gradient(135deg,#6d28d9,var(--science));}
+
+  .randomBtn{
+    border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:14.5px;
+    border-radius:999px; padding:10px 20px; color:#fff;
+    background:linear-gradient(135deg,#f59e0b,#f97316); box-shadow:0 8px 20px rgba(245,158,11,.35);
+    transition:.15s;
+  }
+  .randomBtn:hover{transform:translateY(-2px) rotate(-1deg);}
+
+  /* ===== 卡片网格 ===== */
+  .grid{
+    display:grid; gap:16px;
+    grid-template-columns:repeat(auto-fill, minmax(255px, 1fr));
+  }
+  .card{
+    position:relative; display:flex; gap:14px; align-items:flex-start;
+    background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    padding:18px 16px; text-decoration:none; color:inherit;
+    box-shadow:0 8px 22px rgba(15,23,42,.07); transition:transform .18s, box-shadow .18s;
+    overflow:hidden;
+  }
+  .card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--c,#94a3b8);
+  }
+  .card:hover{transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.13);}
+  .card:active{transform:translateY(-1px) scale(.99);}
+  .card .ico{
+    flex:0 0 auto; width:54px; height:54px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+    font-size:28px; line-height:1; background:var(--c-b,#f1f5f9);
+  }
+  .card .body{flex:1 1 auto; min-width:0;}
+  .card h3{margin:0 0 5px; font-size:17.5px; line-height:1.35; letter-spacing:.3px;}
+  .card .desc{margin:0 0 9px; font-size:13.5px; color:var(--sub); line-height:1.65;}
+  .tags{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-size:12px; font-weight:700; border-radius:999px; padding:3px 9px;
+    background:var(--c-b,#f1f5f9); color:var(--c,#475569);
+  }
+  .card .go{
+    position:absolute; right:14px; top:16px; font-size:15px; color:#cbd5e1; transition:.18s;
+  }
+  .card:hover .go{color:var(--c,#94a3b8); transform:translateX(3px);}
+  .card.hide{display:none;}
+
+  .empty{
+    grid-column:1/-1; text-align:center; padding:36px 16px; color:var(--sub); font-size:15px;
+    background:rgba(255,255,255,.7); border:1px dashed #cbd5e1; border-radius:var(--r);
+  }
+
+  /* ===== 底部 ===== */
+  footer{text-align:center; margin-top:34px; color:var(--sub); font-size:13px; line-height:1.9;}
+  footer .heart{color:#e11d48;}
+
+  /* ===== 小屏适配 ===== */
+  @media (max-width:560px){
+    body{padding:18px 12px 40px;}
+    .card{padding:15px 14px; gap:12px;}
+    .card .ico{width:48px; height:48px; font-size:25px;}
+    .card h3{font-size:16.5px;}
+    .tab{padding:8px 13px; font-size:13.5px;}
+    .stat{min-width:78px; padding:7px 12px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
 </head>
 <body>
-    <h1>你好，世界！这是我的第一个 GitHub Pages 网站。</h1>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="badge">🎒 二年级 · 趣味学习乐园</span>
+    <h1>欢迎来到 <span class="em">学习乐园</span></h1>
+    <p>数学、语文、英语、科学四大板块，边玩边学。手机、平板、电脑都能打开，随时练习。</p>
+    <div class="statRow" id="statRow"></div>
+  </div>
+
+  <div class="recent hide" id="recent">
+    <span class="lab">🕒 最近学习</span>
+    <div id="recentList" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;"></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="tabs"></div>
+    <button class="randomBtn" id="randomBtn" title="随机打开一个练习">🎲 随机来一局</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <div>用 <span class="heart">❤️</span> 为小朋友做的练习小站 · 共 <b id="footCount">0</b> 个学习项目</div>
+    <div>小提示：把网址加入浏览器书签，下次一点就到啦！</div>
+  </footer>
+
+</div>
+
+<script>
+/* ========== 学习项目清单 ==========
+   新增页面时，只需在下面数组里加一项即可。 */
+var APPS = [
+  /* ---------- 数学 ---------- */
+  { file:"%E4%B9%9D%E4%B9%9D%E4%B9%98%E6%B3%95%E8%A1%A8%E5%A4%A7%E5%86%92%E9%99%A9.html",
+    title:"九九乘法表大冒险", icon:"✖️", subject:"math",
+    desc:"从「一一得一」到「九九八十一」，闯关式背乘法口诀。",
+    tags:["乘法口诀","闯关"] },
+  { file:"%E4%B8%87%E4%BB%A5%E5%86%85%E5%8A%A0%E5%87%8F%E6%B3%95%E7%AE%80%E4%BE%BF%E8%BF%90%E7%AE%97.html",
+    title:"万以内加减法简便运算", icon:"➕", subject:"math",
+    desc:"凑整、拆分、带符号搬家，学会又快又准地巧算。",
+    tags:["加减法","巧算"] },
+  { file:"%E5%8A%A0%E6%B3%95%E4%B9%98%E6%B3%95%E8%B7%AF%E5%BE%84%E5%A4%A7%E5%86%92%E9%99%A9.html",
+    title:"加法 vs 乘法 · 路径大冒险", icon:"🛣️", subject:"math",
+    desc:"在路径选择中明白：乘法是相同加数相加的简便算法。",
+    tags:["加法","乘法"] },
+  { file:"%E5%9B%A0%E6%95%B0%E5%B0%84%E5%87%BB%E6%B8%B8%E6%88%8F.html",
+    title:"因数大作战 · 太空射击", icon:"🚀", subject:"math",
+    desc:"找出目标数的因数，发射炮弹击落陨石，比比小手反应快。",
+    tags:["因数","反应力"] },
+  { file:"%E4%B8%80%E7%AC%94%E7%94%BB.html",
+    title:"一笔画魔法 · 奇数点的秘密", icon:"✏️", subject:"math",
+    desc:"数一数单数点，判断图形能不能一笔画成，图形真好玩。",
+    tags:["图形","思维"] },
+  { file:"%E6%95%B0%E7%BA%BF%E6%AE%B5.html",
+    title:"数线段 · 趣味小课堂", icon:"📏", subject:"math",
+    desc:"按起点有序地数，做到不重复也不遗漏。",
+    tags:["几何","有序思考"] },
+  { file:"%E6%A0%91%E7%8A%B6%E5%9B%BE%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88%E5%A4%A7%E5%86%92%E9%99%A9.html",
+    title:"树状图排列组合大冒险", icon:"🌳", subject:"math",
+    desc:"画一画树状图，把所有搭配办法一个不落地列出来。",
+    tags:["搭配","枚举"] },
+  { file:"%E9%9B%B7%E8%BE%BE%E7%AB%99%E7%89%B9%E5%B7%A5%EF%BC%9A%E5%90%AC%E4%BB%A4%E5%B0%84%E5%87%BB.html",
+    title:"雷达站特工 · 听令射击", icon:"📡", subject:"math",
+    desc:"听清坐标口令，在网格里找到准确位置，做个神枪手。",
+    tags:["坐标","位置"] },
+  /* ---------- 语文 ---------- */
+  { file:"%E5%89%8D%E5%90%8E%E9%BC%BB%E9%9F%B3%E5%AD%A6%E4%B9%A0%E5%B7%A5%E5%85%B7.html",
+    title:"前后鼻音小达人", icon:"🎤", subject:"chinese",
+    desc:"分清 an/en/in 和 ang/eng/ing，读准每一个前后鼻音。",
+    tags:["拼音","朗读"] },
+  /* ---------- 英语 ---------- */
+  { file:"%E8%8B%B1%E8%AF%AD%E5%8D%95%E8%AF%8D%E5%A4%A7%E5%86%92%E9%99%A9.html",
+    title:"英语单词大冒险", icon:"🔤", subject:"english",
+    desc:"动物、颜色、数字主题单词卡，还能听音选词、拼单词。",
+    tags:["单词","听力"] },
+  /* ---------- 科学 ---------- */
+  { file:"%E7%A7%91%E5%AD%A6%E6%8E%A2%E7%A7%98%E9%A6%86.html",
+    title:"科学探秘馆", icon:"🧲", subject:"science",
+    desc:"太阳与影子、磁铁大力士、科学小考场，动手又动脑。",
+    tags:["磁铁","影子"] }
+];
+
+var SUBJECTS = [
+  { key:"all",     name:"全部",  c:"#334155", cb:"#e2e8f0" },
+  { key:"math",    name:"🔢 数学", c:"#2563eb", cb:"#dbeafe" },
+  { key:"chinese", name:"📖 语文", c:"#e11d48", cb:"#ffe4e6" },
+  { key:"english", name:"🔤 英语", c:"#16a34a", cb:"#dcfce7" },
+  { key:"science", name:"🔬 科学", c:"#7c3aed", cb:"#ede9fe" }
+];
+
+/* ========== 渲染 ========== */
+var grid  = document.getElementById("grid");
+var tabsEl= document.getElementById("tabs");
+
+function pad(n){ return n<10 ? "0"+n : ""+n; }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(m){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]; }); }
+
+/* 顶部统计 */
+(function renderStats(){
+  var row = document.getElementById("statRow");
+  var html = '<div class="stat"><b>'+APPS.length+'</b><span>学习项目</span></div>';
+  SUBJECTS.slice(1).forEach(function(s){
+    var n = APPS.filter(function(a){return a.subject===s.key;}).length;
+    html += '<div class="stat"><b style="color:'+s.c+'">'+n+'</b><span>'+s.name.split(" ")[1]+'</span></div>';
+  });
+  row.innerHTML = html;
+  document.getElementById("footCount").textContent = APPS.length;
+})();
+
+/* 学科筛选按钮 */
+(function renderTabs(){
+  var html = "";
+  SUBJECTS.forEach(function(s, i){
+    var n = s.key==="all" ? APPS.length : APPS.filter(function(a){return a.subject===s.key;}).length;
+    html += '<button class="tab'+(i===0?" on":"")+'" data-s="'+s.key+'">'+s.name+
+            '<span class="n">'+n+'</span></button>';
+  });
+  tabsEl.innerHTML = html;
+  tabsEl.addEventListener("click", function(e){
+    var b = e.target.closest(".tab"); if(!b) return;
+    tabsEl.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("on"); });
+    b.classList.add("on");
+    filterCards(b.dataset.s);
+  });
+})();
+
+/* 卡片 */
+(function renderCards(){
+  var html = "";
+  APPS.forEach(function(a, i){
+    var s = SUBJECTS.filter(function(x){return x.key===a.subject;})[0];
+    html += '<a class="card" data-s="'+a.subject+'" data-i="'+i+'" href="'+a.file+'"'+
+            ' style="--c:'+s.c+';--c-b:'+s.cb+'">'+
+            '<span class="go">›</span>'+
+            '<div class="ico">'+a.icon+'</div>'+
+            '<div class="body">'+
+              '<h3>'+esc(a.title)+'</h3>'+
+              '<p class="desc">'+esc(a.desc)+'</p>'+
+              '<div class="tags">'+
+                '<span class="tag">'+s.name+'</span>'+
+                a.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("")+
+              '</div>'+
+            '</div>'+
+          '</a>';
+  });
+  grid.innerHTML = html;
+})();
+
+function filterCards(key){
+  var shown = 0;
+  grid.querySelectorAll(".card").forEach(function(c){
+    var ok = (key==="all") || (c.dataset.s===key);
+    c.classList.toggle("hide", !ok);
+    if(ok) shown++;
+  });
+  var empty = document.getElementById("emptyTip");
+  if(!shown){
+    if(!empty){
+      empty = document.createElement("div");
+      empty.id = "emptyTip"; empty.className = "empty";
+      grid.appendChild(empty);
+    }
+    empty.style.display = "block";
+    empty.textContent = "这个学科还没有内容，敬请期待～";
+  } else if(empty){
+    empty.style.display = "none";
+  }
+}
+
+/* ========== 记录最近学习 ========== */
+var LS_KEY = "studyPark.recent";
+function getRecent(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; }
+}
+function saveVisit(i){
+  var a = APPS[i]; if(!a) return;
+  var list = getRecent().filter(function(x){ return x.file !== a.file; });
+  list.unshift({ file:a.file, title:a.title, icon:a.icon, ts:Date.now() });
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0,5))); }catch(e){}
+}
+(function renderRecent(){
+  var list = getRecent().slice(0,4);
+  var box = document.getElementById("recent");
+  var holder = document.getElementById("recentList");
+  if(!list.length){ box.classList.add("hide"); return; }
+  box.classList.remove("hide");
+  holder.innerHTML = list.map(function(x){
+    return '<a class="chip" href="'+x.file+'">'+x.icon+" "+esc(x.title)+'</a>';
+  }).join("");
+})();
+
+grid.addEventListener("click", function(e){
+  var c = e.target.closest(".card"); if(!c) return;
+  saveVisit(parseInt(c.dataset.i,10));
+});
+
+/* ========== 随机来一局 ========== */
+document.getElementById("randomBtn").addEventListener("click", function(){
+  var i = Math.floor(Math.random()*APPS.length);
+  saveVisit(i);
+  location.href = APPS[i].file;
+});
+</script>
 </body>
 </html>

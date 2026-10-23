@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前后鼻音小达人 · 记一记 · 学一学 · 测一测</title>
+<style>
+  :root {
+    --sky: #4FC3F7;
+    --sky-deep: #29B6F6;
+    --mint: #66BB6A;
+    --mint-deep: #43A047;
+    --sun: #FFCA28;
+    --coral: #FF7043;
+    --ink: #37474F;
+    --ink-soft: #607D8B;
+    --card: #ffffff;
+    --bg-a: #E8F7FF;
+    --bg-b: #EAFBF0;
+    --good: #43A047;
+    --bad: #E53935;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Comic Sans MS", "Segoe UI", sans-serif;
+    background: linear-gradient(160deg, var(--bg-a) 0%, #f0fbf5 50%, var(--bg-b) 100%);
+    min-height: 100vh;
+    color: var(--ink);
+    padding: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  /* ===== 顶部标题 ===== */
+  header.title {
+    text-align: center;
+    margin: 10px 0 18px;
+  }
+  header.title h1 {
+    font-size: 34px;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--sky-deep), var(--mint-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  header.title p {
+    margin-top: 6px;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+
+  /* ===== Tabs ===== */
+  .tabs {
+    display: flex;
+    gap: 14px;
+    margin: 0 auto 20px;
+    max-width: 660px;
+  }
+  .tab {
+    flex: 1;
+    font-size: 24px;
+    font-weight: 800;
+    padding: 16px 10px;
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.75);
+    color: var(--ink-soft);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+    transition: transform .15s ease, box-shadow .15s ease, background .25s ease, color .25s ease;
+  }
+  .tab:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.10); }
+  .tab:active { transform: scale(0.97); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--sky), var(--sky-deep));
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(41,182,246,0.45);
+  }
+  .tab.tab-test.active {
+    background: linear-gradient(135deg, var(--mint), var(--mint-deep));
+    box-shadow: 0 8px 20px rgba(67,160,71,0.45);
+  }
+  .tab.tab-learned.active {
+    background: linear-gradient(135deg, #FFB300, #FB8C00);
+    box-shadow: 0 8px 20px rgba(251,140,0,0.45);
+  }
+
+  .panel {
+    display: none;
+    animation: fadeIn .35s ease;
+  }
+  .panel.show { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(55,71,79,0.10);
+    margin-bottom: 16px;
+  }
+
+  /* ===== 记一记 ===== */
+  .tab.tab-memory.active {
+    background: linear-gradient(135deg, #AB47BC, #7B1FA2);
+    box-shadow: 0 8px 20px rgba(123,31,162,0.45);
+  }
+  .memory-intro { text-align: center; }
+  .memory-h2 {
+    font-size: 26px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #AB47BC, #7B1FA2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  .memory-sub { margin-top: 6px; font-size: 15px; color: var(--ink-soft); }
+
+  .memory-section { padding: 20px; border-top: 6px solid var(--sec); }
+  .memory-sec-head {
+    display: inline-block;
+    font-size: 19px;
+    font-weight: 900;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--sec-soft);
+    color: var(--sec);
+    margin-bottom: 14px;
+  }
+  .jingle-banner {
+    border: 3px dashed var(--sec);
+    background: var(--sec-soft);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .jingle-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--sec);
+    opacity: 0.8;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .jingle-text {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .jingle-pill {
+    font-size: 22px;
+    font-weight: 900;
+    background: #fff;
+    color: var(--sec);
+    border-radius: 14px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    letter-spacing: 2px;
+  }
+  .family-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 14px;
+  }
+  .family-card {
+    background: #fff;
+    border: 2px solid #ECEFF1;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .family-card:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.08); }
+  .family-card.important { border-color: #FFCA28; background: #FFFDE7; }
+  .family-head { display: flex; align-items: center; gap: 10px; }
+  .family-char { font-size: 38px; font-weight: 900; line-height: 1; color: var(--sec); }
+  .family-pinyin { font-size: 16px; font-weight: 700; color: var(--ink-soft); }
+  .fam-star {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 800;
+    background: #FFF3E0;
+    color: #F57C00;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .family-members { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fam-chip {
+    font-size: 19px;
+    font-weight: 800;
+    background: var(--sec-soft);
+    border: 2px solid var(--sec);
+    color: var(--sec);
+    border-radius: 10px;
+    padding: 1px 8px;
+    line-height: 1.4;
+  }
+  .family-note { font-size: 15px; line-height: 1.6; color: #5D4037; }
+
+  /* ===== 学一学 ===== */
+  .learn-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .counter {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--sky-deep);
+    background: #E1F5FE;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+  .group-tag {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--sun);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .group-tag.in { background: #29B6F6; }
+  .group-tag.en { background: #FF7043; }
+  .group-tag.an { background: #66BB6A; }
+  .group-tag.uan { background: #AB47BC; }
+  .group-tag.ian { background: #EC407A; }
+
+  .progress-track {
+    width: 100%;
+    height: 14px;
+    background: #E0F2F1;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 10px 0 18px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--sky), var(--mint));
+    border-radius: 999px;
+    transition: width .4s ease;
+  }
+
+  .big-char {
+    text-align: center;
+    font-size: 130px;
+    line-height: 1.1;
+    font-weight: 900;
+    color: var(--ink);
+    margin: 6px 0;
+    text-shadow: 0 4px 0 rgba(79,195,247,0.15);
+  }
+
+  .words {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin: 4px 0 22px;
+  }
+  .words .hl {
+    color: var(--bad);
+    font-weight: 900;
+    text-decoration: underline;
+    text-decoration-color: rgba(229,57,53,0.4);
+    text-underline-offset: 5px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .opt-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 27px;
+    font-weight: 800;
+    padding: 18px 22px;
+    border: 3px solid #E3F2FD;
+    border-radius: 18px;
+    background: #F4FBFF;
+    color: var(--ink);
+    cursor: pointer;
+    text-align: left;
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease, border-color .2s ease;
+  }
+  .opt-btn .opt-label {
+    flex: 0 0 auto;
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--sky);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 20px;
+  }
+  .opt-btn .opt-pinyin { flex: 1; letter-spacing: 1px; }
+  .opt-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(41,182,246,0.25); background: #E8F6FF; }
+  .opt-btn:active { transform: scale(0.97); }
+
+  .opt-btn.uncertain {
+    border-color: #FFF3E0;
+    background: #FFF8F0;
+    justify-content: center;
+    color: var(--coral);
+  }
+  .opt-btn.uncertain .opt-label { background: var(--sun); color: #6d4c00; }
+  .opt-btn.uncertain:hover { background: #FFF1DE; box-shadow: 0 10px 22px rgba(255,202,40,0.3); }
+
+  .opt-btn.is-correct {
+    border-color: var(--good);
+    background: #E8F8E9;
+    color: var(--good);
+    box-shadow: 0 0 0 4px rgba(67,160,71,0.18);
+    animation: pop .35s ease;
+  }
+  .opt-btn.is-correct .opt-label { background: var(--good); }
+  .opt-btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  /* 反馈与记忆卡 */
+  .feedback {
+    display: none;
+    margin-top: 16px;
+  }
+  .feedback.show { display: block; animation: fadeIn .35s ease; }
+
+  .success-box {
+    background: linear-gradient(135deg, #E8F8E9, #C8E6C9);
+    border: 3px solid var(--good);
+    border-radius: 18px;
+    padding: 16px 18px;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--good);
+  }
+
+  .tip-card {
+    background: #FFF8E1;
+    border: 3px dashed var(--sun);
+    border-radius: 18px;
+    padding: 18px;
+    margin-top: 14px;
+    animation: fadeIn .4s ease;
+  }
+  .tip-card .tip-title {
+    font-size: 21px;
+    font-weight: 900;
+    color: #B26A00;
+    margin-bottom: 8px;
+  }
+  .tip-card .tip-body {
+    font-size: 20px;
+    line-height: 1.7;
+    color: #6d4c00;
+  }
+  .jingle {
+    margin-top: 12px;
+    background: #E3F2FD;
+    border: 2px solid #90CAF9;
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .jingle .jingle-title {
+    font-weight: 900;
+    font-size: 18px;
+    color: #0D47A1;
+    margin-bottom: 6px;
+  }
+  .jingle .jingle-body {
+    font-size: 18px;
+    line-height: 1.9;
+    color: #0D47A1;
+  }
+  .jingle .jingle-body b { color: #1565C0; }
+
+  /* 选项 + 下一个：左右并排，按钮紧贴选项右边 */
+  .learn-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .learn-row .options {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+  }
+  .next-btn {
+    display: none;
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: 24px;
+    font-weight: 900;
+    padding: 18px 20px;
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--mint), var(--mint-deep));
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(67,160,71,0.4);
+    transition: transform .12s ease, box-shadow .12s ease;
+    animation: pop .35s ease;
+  }
+  .next-btn.show { display: inline-flex; align-items: center; gap: 8px; }
+  .next-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 26px rgba(67,160,71,0.5); }
+  .next-btn:active { transform: scale(0.95); }
+  .next-btn .kbd {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    background: rgba(255,255,255,0.28);
+    padding: 5px 9px;
+    border-radius: 8px;
+    letter-spacing: 0;
+  }
+
+  /* ===== 测一测 ===== */
+  .test-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .q-counter {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--mint-deep);
+    background: #E8F5E9;
+    padding: 8px 16px;
+    border-radius: 999px;
+  }
+  .test-char-wrap {
+    text-align: center;
+    margin: 4px 0 14px;
+  }
+  .test-char-wrap .big-char { font-size: 110px; margin: 4px 0; }
+
+  .test-opt {
+    border-color: #E8F5E9;
+    background: #F5FBF6;
+  }
+  .test-opt .opt-label { background: var(--mint); }
+  .test-opt:hover { background: #EAF6EC; box-shadow: 0 10px 22px rgba(102,187,106,0.25); }
+  .test-opt.chosen {
+    border-color: var(--mint-deep);
+    background: #E3F5E5;
+    color: var(--mint-deep);
+    box-shadow: 0 0 0 4px rgba(102,187,106,0.18);
+  }
+  .test-opt.chosen .opt-label { background: var(--mint-deep); }
+
+  .nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .nav-btn {
+    flex: 1;
+    font-size: 21px;
+    font-weight: 800;
+    padding: 14px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    background: #ECEFF1;
+    color: var(--ink);
+    transition: transform .12s ease, background .2s ease;
+  }
+  .nav-btn:hover { background: #E0E4E7; transform: translateY(-2px); }
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+  .submit-btn {
+    display: none;
+    width: 100%;
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 900;
+    padding: 18px;
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--coral), #F4511E);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(244,81,30,0.4);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .submit-btn.show { display: block; animation: fadeIn .4s ease; }
+  .submit-btn:hover { transform: translateY(-3px); }
+  .submit-btn:active { transform: scale(0.97); }
+
+  /* 成绩单 */
+  .report { display: none; }
+  .report.show { display: block; animation: fadeIn .4s ease; }
+  .score-hero {
+    text-align: center;
+    padding: 8px 0 4px;
+  }
+  .score-num {
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--sky-deep), var(--mint-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .score-label { font-size: 18px; color: var(--ink-soft); margin-top: 2px; }
+  .praise {
+    font-size: 30px;
+    font-weight: 900;
+    margin: 12px 0 6px;
+    color: var(--coral);
+  }
+  .score-sub { font-size: 18px; color: var(--ink-soft); }
+
+  .wrong-title {
+    font-size: 25px;
+    font-weight: 900;
+    margin: 22px 0 12px;
+    color: var(--bad);
+    text-align: center;
+  }
+  .perfect-note {
+    text-align: center;
+    font-size: 22px;
+    color: var(--good);
+    font-weight: 800;
+    margin: 8px 0 20px;
+  }
+
+  .wrong-card {
+    background: #FFF5F5;
+    border: 2px solid #FFCDD2;
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .wrong-card .wrong-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .wrong-card .wrong-zi {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--ink);
+  }
+  .wrong-card .wrong-line {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .wrong-card .wrong-line .ur { color: var(--bad); }
+  .wrong-card .wrong-line .ok { color: var(--good); }
+  .wrong-card .tip-card { margin-top: 12px; background: #FFFDE7; }
+
+  .reset-btn {
+    display: block;
+    margin: 18px auto 0;
+    font-size: 22px;
+    font-weight: 800;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: var(--sky);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(79,195,247,0.4);
+    transition: transform .12s ease;
+  }
+  .reset-btn:hover { transform: translateY(-3px); }
+  .reset-btn:active { transform: scale(0.96); }
+
+  /* ===== 已学会 ===== */
+  .learned-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .learned-head .counter {
+    background: #FFF3E0;
+    color: #E65100;
+  }
+  .learned-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 14px;
+  }
+  .learned-card {
+    background: #F6FFFA;
+    border: 2px solid #C8E6C9;
+    border-radius: 18px;
+    padding: 14px 14px 16px;
+    text-align: center;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .learned-card:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(67,160,71,0.15); }
+  .learned-card .l-zi {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .learned-card .l-pinyin {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--mint-deep);
+    margin: 2px 0;
+  }
+  .learned-card .l-group {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    padding: 2px 9px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+  .learned-card .l-words {
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 4px 0 12px;
+    line-height: 1.5;
+  }
+  .learned-card .l-words .hl { color: var(--bad); font-weight: 900; }
+  .remove-btn {
+    font-size: 16px;
+    font-weight: 800;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: #FFEBEE;
+    color: var(--bad);
+    transition: transform .12s ease, background .2s ease;
+  }
+  .remove-btn:hover { background: #FFCDD2; transform: translateY(-2px); }
+  .remove-btn:active { transform: scale(0.95); }
+  .clear-all-btn {
+    margin-left: auto;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: #FFEBEE;
+    color: var(--bad);
+    transition: transform .12s ease, background .2s ease;
+  }
+  .clear-all-btn:hover { background: #FFCDD2; transform: translateY(-2px); }
+  .clear-all-btn:active { transform: scale(0.95); }
+  .clear-all-btn:disabled { opacity: 0.45; pointer-events: none; }
+  .learned-empty {
+    text-align: center;
+    font-size: 22px;
+    color: var(--ink-soft);
+    padding: 40px 10px;
+  }
+  .learned-empty .big { font-size: 60px; display: block; margin-bottom: 10px; }
+  .learned-note {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  footer {
+    text-align: center;
+    margin: 24px 0 10px;
+    color: #90A4AE;
+    font-size: 14px;
+  }
+
+  @media (max-width: 520px) {
+    header.title h1 { font-size: 27px; }
+    .tabs { flex-wrap: wrap; gap: 10px; }
+    .tab { flex: 1 1 42%; font-size: 18px; padding: 12px 6px; }
+    .jingle-pill { font-size: 19px; padding: 9px 12px; }
+    .big-char { font-size: 100px; }
+    .test-char-wrap .big-char { font-size: 90px; }
+    .words { font-size: 25px; }
+    .opt-btn { font-size: 22px; padding: 15px 16px; }
+    .opt-btn .opt-label { width: 38px; height: 38px; font-size: 17px; }
+    .learn-row { flex-direction: column; align-items: stretch; }
+    .next-btn { width: 100%; justify-content: center; font-size: 22px; padding: 15px 18px; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#e11d48,#fb7185);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">📖 语文 · 前后鼻音小达人</span>
+</div>
+<div class="app">
+
+  <header class="title">
+    <h1>🌈 前后鼻音小达人</h1>
+    <p>分清前鼻音 an·en·in·uan·ian 与后鼻音 ang·eng·ing·uang·iang</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab tab-memory active" id="tabMemory" onclick="switchTab('memory')">🧠 记一记</button>
+    <button class="tab tab-learn" id="tabLearn" onclick="switchTab('learn')">📖 学一学</button>
+    <button class="tab tab-test" id="tabTest" onclick="switchTab('test')">📝 测一测</button>
+    <button class="tab tab-learned" id="tabLearned" onclick="switchTab('learned')">🏆 已学会</button>
+  </div>
+
+  <!-- ============ 板块〇：记一记 ============ -->
+  <section class="panel show" id="memoryPanel">
+    <div class="card memory-intro">
+      <h2 class="memory-h2">🧠 记一记 · 顺口溜记前后鼻音</h2>
+      <p class="memory-sub">记住一个「家族头字」，全家生字都跟着读对！</p>
+    </div>
+    <div id="memorySections"></div>
+  </section>
+
+  <!-- ============ 板块一：学一学 ============ -->
+  <section class="panel" id="learnPanel">
+    <div class="card">
+      <div class="learn-head">
+        <span class="counter" id="learnCounter">1 / 1</span>
+        <span class="group-tag" id="learnGroup">in组</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="learnFill"></div></div>
+
+      <div class="big-char" id="learnChar">引</div>
+      <div class="words" id="learnWords"></div>
+
+      <div class="learn-row">
+        <div class="options" id="learnOptions"></div>
+        <button class="next-btn" id="learnNext" onclick="nextLearn()">👉 下一个<span class="kbd">空格</span></button>
+      </div>
+
+      <div class="feedback" id="learnFeedback">
+        <div class="success-box" id="learnSuccess" style="display:none;">✨ 答对啦！真棒！</div>
+        <div class="tip-card" id="learnTip" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 板块二：测一测 ============ -->
+  <section class="panel" id="testPanel">
+    <!-- 答题区 -->
+    <div class="card" id="testBody">
+      <div class="test-nav">
+        <span class="q-counter" id="testCounter">第 1 题</span>
+      </div>
+      <div class="test-char-wrap">
+        <div class="big-char" id="testChar">引</div>
+        <div class="words" id="testWords"></div>
+      </div>
+      <div class="options" id="testOptions"></div>
+
+      <div class="nav-btns">
+        <button class="nav-btn" id="testPrev" onclick="testPrev()">⬅️ 上一题</button>
+        <button class="nav-btn" id="testNext" onclick="testNext()">下一题 ➡️</button>
+      </div>
+      <button class="submit-btn" id="testSubmit" onclick="submitTest()">🎯 提交测试</button>
+    </div>
+
+    <!-- 成绩单 -->
+    <div class="card report" id="testReport">
+      <div class="score-hero">
+        <div class="score-num" id="scoreNum">0</div>
+        <div class="score-label">分（满分 100 分）</div>
+        <div class="praise" id="praiseText"></div>
+        <div class="score-sub" id="scoreSub"></div>
+        <div class="score-sub" id="newLearnedNote" style="color:#E65100;font-weight:800;"></div>
+      </div>
+      <div class="wrong-title" id="wrongTitle">💪 错题大阅兵</div>
+      <div class="perfect-note" id="perfectNote" style="display:none;">🎉 全对！没有错题，你太厉害啦！</div>
+      <div id="wrongList"></div>
+      <button class="reset-btn" onclick="startTest()">🔄 重新测试</button>
+      <button class="reset-btn" style="margin-top:10px; background:#ECEFF1; color:var(--ink);" onclick="switchTab('learn')">📖 再去学一学</button>
+    </div>
+  </section>
+
+  <!-- ============ 板块三：已学会 ============ -->
+  <section class="panel" id="learnedPanel">
+    <div class="card">
+      <div class="learned-head">
+        <span class="counter" id="learnedCount">已学会 0 个字</span>
+        <button class="clear-all-btn" id="clearAllBtn" onclick="removeAllLearned()">🗑️ 一键全部移除</button>
+      </div>
+      <div id="learnedList"></div>
+      <div class="learned-note">💡 连续三次测试都答对，生字就会进入这里；点击「移除」可让它重新回到学一学和测一测。</div>
+    </div>
+  </section>
+
+  <footer>🌟 每天练一练，前后鼻音不再混～</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ================= 数据源 =================
+   每个字：zi 字 | correct 正确拼音 | wrong 易混(前后鼻音)拼音 | words 组词 | hook 记忆口诀
+   按 5 组归纳：in组 / en组 / an组 / uan组 / ian组。
+   每组提供 front(前鼻音) 与 back(后鼻音) 两段肌肉动作指导，渲染时自动拼接。 */
+const GROUPS = [
+  {
+    name: "in组",
+    front: "舌尖像踩刹车一样顶住上门牙背后，声音停在鼻尖前，收个短促的 n 尾巴。",
+    back: "舌根往后一抬，让声音往喉咙和后脑勺走，拖出“嗡嗡”的 ng 尾巴。",
+    jingleFront: "前鼻 <b>in</b> 要记牢，舌尖顶上门牙稍：<br>宾(bīn)客来，拼(pīn)音拼，人民(mín)您好(nín)敬个礼；<br>树林、邻居和来临，三个都读 <b>lín</b> lín lín。<br><br>金子、今天、一斤、毛巾，四个都是 <b>jīn</b>；<br>亲人(qīn)亲切暖心窝。<br><br>心情、新年、辛苦、欣喜，xīn xīn xīn xīn 收得紧；<br>声音、因为、阴天，yīn yīn yīn；银子(yín)、吸引(yǐn)亮晶晶。<br><br>尽头、附近、前进，jìn jìn jìn 往前顶；<br>作品食品读 <b>pǐn</b>，写信相信读 <b>xìn</b>。<br><br>👄 一句话：<b>in</b> 短促舌尖点，收个 <b>n</b> 尾别拖成 ng！",
+    chars: [
+      // ===== 前鼻音 in =====
+      { zi:"宾", correct:"bīn", wrong:"bīng", words:["宾客","来宾"], hook:"宾客的“宾”，别读成冰。" },
+      { zi:"拼", correct:"pīn", wrong:"pīng", words:["拼音","拼写"], hook:"拼音的“拼”，收 n 尾巴。" },
+      { zi:"民", correct:"mín", wrong:"míng", words:["人民","农民"], hook:"人民的“民”，抿嘴从鼻子送 n。" },
+      { zi:"您", correct:"nín", wrong:"níng", words:["您好","您们"], hook:"“您”有礼貌，点门牙收 n。" },
+      { zi:"林", correct:"lín", wrong:"líng", words:["树林","山林"], hook:"树林的“林”，舌尖抵门牙收 n。" },
+      { zi:"邻", correct:"lín", wrong:"líng", words:["邻居","邻里"], hook:"邻居的“邻”，跟“林”一样收 n。" },
+      { zi:"临", correct:"lín", wrong:"líng", words:["来临","临时"], hook:"来临的“临”，前鼻音收 n。" },
+      { zi:"金", correct:"jīn", wrong:"jīng", words:["金子","金牌"], hook:"金子亮在舌尖，别读成“京”。" },
+      { zi:"今", correct:"jīn", wrong:"jīng", words:["今天","今年"], hook:"今天的“今”，短促点门牙，不是“京”。" },
+      { zi:"斤", correct:"jīn", wrong:"jīng", words:["一斤","公斤"], hook:"一斤的“斤”，短促收 n。" },
+      { zi:"巾", correct:"jīn", wrong:"jīng", words:["毛巾","红领巾"], hook:"毛巾的“巾”，别读成“京”。" },
+      { zi:"亲", correct:"qīn", wrong:"qīng", words:["亲人","父亲"], hook:"亲人的“亲”，点门牙说“亲”。" },
+      { zi:"心", correct:"xīn", wrong:"xīng", words:["心情","小心"], hook:"心里的“心”比“星”短一截。" },
+      { zi:"新", correct:"xīn", wrong:"xīng", words:["新年","新鲜"], hook:"新年的“新”，别读成“星”。" },
+      { zi:"辛", correct:"xīn", wrong:"xīng", words:["辛苦","辛劳"], hook:"辛苦的“辛”，收 n。" },
+      { zi:"欣", correct:"xīn", wrong:"xīng", words:["欣喜","欣赏"], hook:"欣喜的“欣”，前鼻音。" },
+      { zi:"音", correct:"yīn", wrong:"yīng", words:["拼音","声音"], hook:"音乐的音，别读成“英”。" },
+      { zi:"因", correct:"yīn", wrong:"yīng", words:["因为","原因"], hook:"因为的“因”，别读成“英”。" },
+      { zi:"阴", correct:"yīn", wrong:"yīng", words:["阴天","阴影"], hook:"阴天的“阴”，前鼻音。" },
+      { zi:"银", correct:"yín", wrong:"yíng", words:["银子","银行"], hook:"银子的“银”，收 n 尾巴。" },
+      { zi:"引", correct:"yǐn", wrong:"yǐng", words:["吸引","引路"], hook:"“吸引”的声音停在鼻尖前。" },
+      { zi:"尽", correct:"jìn", wrong:"jìng", words:["尽头","尽力"], hook:"用尽全力往前顶，别拖成“竟”。" },
+      { zi:"近", correct:"jìn", wrong:"jìng", words:["远近","附近"], hook:"“近”离得近，点门牙收 n。" },
+      { zi:"进", correct:"jìn", wrong:"jìng", words:["进入","前进"], hook:"前进要往前顶，舌尖顶门牙收 n。" },
+      { zi:"品", correct:"pǐn", wrong:"pǐng", words:["作品","食品"], hook:"食品的“品”，抿嘴顶门牙收 n。" },
+      { zi:"信", correct:"xìn", wrong:"xìng", words:["写信","相信"], hook:"写信结尾舌尖顶门牙，不是“姓”。" },
+      // ===== 后鼻音 ing =====
+      { zi:"冰", correct:"bīng", wrong:"bīn", words:["冰块","冰冷"], hook:"冰冰凉，后鼻音，别读成“宾”。" },
+      { zi:"兵", correct:"bīng", wrong:"bīn", words:["士兵","当兵"], hook:"士兵的“兵”，后鼻音。" },
+      { zi:"平", correct:"píng", wrong:"pín", words:["平安","平时"], hook:"平安的“平”，后鼻音，别读成“贫”。" },
+      { zi:"苹", correct:"píng", wrong:"pín", words:["苹果","苹果树"], hook:"苹果的“苹”，后鼻音。" },
+      { zi:"瓶", correct:"píng", wrong:"pín", words:["瓶子","花瓶"], hook:"瓶子的“瓶”，后鼻音。" },
+      { zi:"名", correct:"míng", wrong:"mín", words:["名字","有名"], hook:"名字的“名”，后鼻音，别读成“民”。" },
+      { zi:"明", correct:"míng", wrong:"mín", words:["明天","明亮"], hook:"明天的“明”，舌根后抬。" },
+      { zi:"丁", correct:"dīng", wrong:"dīn", words:["园丁","肉丁"], hook:"园丁的“丁”，后鼻音。" },
+      { zi:"钉", correct:"dīng", wrong:"dīn", words:["钉子","钉住"], hook:"钉子的“钉”，后鼻音。" },
+      { zi:"叮", correct:"dīng", wrong:"dīn", words:["叮当","叮咛"], hook:"叮当的“叮”，后鼻音。" },
+      { zi:"听", correct:"tīng", wrong:"tīn", words:["听见","听话"], hook:"听见的“听”，舌根后抬。" },
+      { zi:"厅", correct:"tīng", wrong:"tīn", words:["大厅","客厅"], hook:"大厅的“厅”，后鼻音。" },
+      { zi:"亭", correct:"tíng", wrong:"tín", words:["凉亭","亭子"], hook:"凉亭的“亭”，后鼻音拖长。" },
+      { zi:"停", correct:"tíng", wrong:"tín", words:["停止","停车"], hook:"停车的“停”，后鼻音。" },
+      { zi:"宁", correct:"níng", wrong:"nín", words:["安宁","宁静"], hook:"安宁的“宁”，后鼻音。" },
+      { zi:"零", correct:"líng", wrong:"lín", words:["零食","零分"], hook:"零食的“零”，别读成“林”。" },
+      { zi:"铃", correct:"líng", wrong:"lín", words:["铃铛","门铃"], hook:"门铃“嗡嗡”响，后鼻音。" },
+      { zi:"灵", correct:"líng", wrong:"lín", words:["机灵","灵活"], hook:"机灵的“灵”，后鼻音。" },
+      { zi:"领", correct:"lǐng", wrong:"lǐn", words:["带领","衣领"], hook:"带领的“领”，舌根后抬。" },
+      { zi:"京", correct:"jīng", wrong:"jīn", words:["北京","京剧"], hook:"北京的“京”，舌根鼓起来顶软腭。" },
+      { zi:"经", correct:"jīng", wrong:"jīn", words:["经过","已经"], hook:"经过的“经”，后鼻音。" },
+      { zi:"精", correct:"jīng", wrong:"jīn", words:["精神","精彩"], hook:"精神的“精”，后鼻音。" },
+      { zi:"惊", correct:"jīng", wrong:"jīn", words:["吃惊","惊吓"], hook:"吃惊的“惊”，后鼻音。" },
+      { zi:"睛", correct:"jīng", wrong:"jīn", words:["眼睛","目不转睛"], hook:"眼睛的“睛”，后鼻音。" },
+      { zi:"井", correct:"jǐng", wrong:"jǐn", words:["水井","井水"], hook:"水井的“井”，后鼻音，别读成“紧”。" },
+      { zi:"景", correct:"jǐng", wrong:"jǐn", words:["风景","景色"], hook:"风景的“景”，后鼻音。" },
+      { zi:"静", correct:"jìng", wrong:"jìn", words:["安静","平静"], hook:"安静的“静”，别读成“近”。" },
+      { zi:"净", correct:"jìng", wrong:"jìn", words:["干净","洗净"], hook:"干净的“净”，后鼻音。" },
+      { zi:"镜", correct:"jìng", wrong:"jìn", words:["镜子","眼镜"], hook:"镜子的“镜”，后鼻音。" },
+      { zi:"青", correct:"qīng", wrong:"qīn", words:["青草","青年"], hook:"青草后鼻音，喉咙嗡嗡响。" },
+      { zi:"清", correct:"qīng", wrong:"qīn", words:["清水","清楚"], hook:"清水的“清”，后鼻音。" },
+      { zi:"轻", correct:"qīng", wrong:"qīn", words:["轻快","年轻"], hook:"轻轻的“轻”，别读成“亲”。" },
+      { zi:"晴", correct:"qíng", wrong:"qín", words:["晴天","晴朗"], hook:"晴天的“晴”，舌根后抬。" },
+      { zi:"情", correct:"qíng", wrong:"qín", words:["事情","心情"], hook:"事情的“情”，舌根后抬。" },
+      { zi:"星", correct:"xīng", wrong:"xīn", words:["星星","星期"], hook:"星星挂得高，声音往后走。" },
+      { zi:"形", correct:"xíng", wrong:"xín", words:["形状","图形"], hook:"形状的“形”，舌根后抬。" },
+      { zi:"行", correct:"xíng", wrong:"xín", words:["行走","行为"], hook:"行走的“行”，后鼻音。" },
+      { zi:"兴", correct:"xìng", wrong:"xìn", words:["高兴","兴趣"], hook:"高兴的“兴”，后鼻音。" },
+      { zi:"姓", correct:"xìng", wrong:"xìn", words:["姓名","百姓"], hook:"姓名的“姓”，别读成“信”。" },
+      { zi:"英", correct:"yīng", wrong:"yīn", words:["英雄","英语"], hook:"英语的“英”，后鼻音。" },
+      { zi:"鹰", correct:"yīng", wrong:"yīn", words:["老鹰","雄鹰"], hook:"老鹰的“鹰”，后鼻音。" },
+      { zi:"迎", correct:"yíng", wrong:"yǐn", words:["欢迎","迎接"], hook:"像鞠躬迎客，舌根后抬往喉咙走。" },
+      { zi:"营", correct:"yíng", wrong:"yín", words:["军营","露营"], hook:"军营的“营”，后鼻音。" },
+      { zi:"影", correct:"yǐng", wrong:"yǐn", words:["影子","电影"], hook:"影子的“影”，别读成“引”。" },
+      { zi:"硬", correct:"yìng", wrong:"yìn", words:["坚硬","硬汉"], hook:"硬邦邦，后鼻音，别读成“印”。" },
+      { zi:"应", correct:"yīng", wrong:"yīn", words:["应该","应当"], hook:"应该的“应”，后鼻音。" }
+    ]
+  },
+  {
+    name: "en组",
+    front: "舌尖顶住上门牙背，短促收 n，声音从鼻前轻轻送出。",
+    back: "舌根往后抬，声音往喉咙深处走，像唱歌把尾音拖到后脑勺。",
+    chars: [
+      // ===== 前鼻音 en =====
+      { zi:"人", correct:"rén", wrong:"réng", words:["人类","大人"], hook:"短促收尾，别拖成长音。" },
+      { zi:"真", correct:"zhēn", wrong:"zhēng", words:["真正","认真"], hook:"舌尖抵门牙背，短而清。" },
+      { zi:"深", correct:"shēn", wrong:"shēng", words:["深浅","深海"], hook:"舌尖点门牙，声音从鼻前送出。" },
+      { zi:"门", correct:"mén", wrong:"méng", words:["大门","门窗"], hook:"抿嘴、顶门牙，收个 n。" },
+      { zi:"本", correct:"běn", wrong:"běng", words:["书本","原本"], hook:"短促有力收 n。" },
+      { zi:"分", correct:"fēn", wrong:"fēng", words:["分数","分开"], hook:"舌尖点门牙，别读成“风”。" },
+      { zi:"神", correct:"shén", wrong:"shéng", words:["神气","精神"], hook:"顶门牙后，从鼻子收 n。" },
+      { zi:"身", correct:"shēn", wrong:"shēng", words:["身体","身上"], hook:"身体的“身”，别读成“生”。" },
+      { zi:"什", correct:"shén", wrong:"shéng", words:["什么","为什么"], hook:"什么的“什”，跟“神”一样收 n。" },
+      { zi:"根", correct:"gēn", wrong:"gēng", words:["树根","根本"], hook:"树根的“根”，别读成“耕”。" },
+      { zi:"跟", correct:"gēn", wrong:"gēng", words:["跟着","脚跟"], hook:"跟着的“跟”，前鼻音收 n。" },
+      { zi:"很", correct:"hěn", wrong:"hěng", words:["很好","很多"], hook:"很好的“很”，短促收 n。" },
+      { zi:"认", correct:"rèn", wrong:"rèng", words:["认识","认真"], hook:"认识的“认”，短促收 n。" },
+      { zi:"针", correct:"zhēn", wrong:"zhēng", words:["针线","打针"], hook:"针线的“针”，别读成“争”。" },
+      { zi:"晨", correct:"chén", wrong:"chéng", words:["早晨","清晨"], hook:"早晨的“晨”，前鼻音收 n。" },
+      { zi:"陈", correct:"chén", wrong:"chéng", words:["姓陈","陈列"], hook:"姓陈的“陈”，前鼻音收 n。" },
+      { zi:"沉", correct:"chén", wrong:"chéng", words:["下沉","沉重"], hook:"沉下去的“沉”，前鼻音收 n。" },
+      { zi:"尘", correct:"chén", wrong:"chéng", words:["灰尘","尘土"], hook:"灰尘的“尘”，前鼻音收 n。" },
+      { zi:"辰", correct:"chén", wrong:"chéng", words:["星辰","时辰"], hook:"星辰的“辰”，前鼻音收 n。" },
+      { zi:"笨", correct:"bèn", wrong:"bèng", words:["笨蛋","笨重"], hook:"笨蛋的“笨”，前鼻音收 n。" },
+      { zi:"盆", correct:"pén", wrong:"péng", words:["脸盆","花盆"], hook:"脸盆的“盆”，前鼻音，别读成“朋”。" },
+      { zi:"粉", correct:"fěn", wrong:"fěng", words:["粉色","面粉"], hook:"粉色的“粉”，前鼻音收 n。" },
+      { zi:"芬", correct:"fēn", wrong:"fēng", words:["芬芳","芬香"], hook:"芬芳的“芬”，前鼻音收 n。" },
+      { zi:"纷", correct:"fēn", wrong:"fēng", words:["纷纷","纷飞"], hook:"纷纷的“纷”，前鼻音收 n。" },
+      { zi:"份", correct:"fèn", wrong:"fèng", words:["一份","月份"], hook:"一份的“份”，前鼻音收 n。" },
+      { zi:"珍", correct:"zhēn", wrong:"zhēng", words:["珍贵","珍惜"], hook:"珍贵的“珍”，前鼻音收 n。" },
+      { zi:"阵", correct:"zhèn", wrong:"zhèng", words:["一阵","阵雨"], hook:"一阵的“阵”，前鼻音，别读成“正”。" },
+      { zi:"伸", correct:"shēn", wrong:"shēng", words:["伸手","伸长"], hook:"伸手的“伸”，前鼻音收 n。" },
+      { zi:"任", correct:"rèn", wrong:"rèng", words:["任务","任何"], hook:"任务的“任”，前鼻音收 n。" },
+      { zi:"怎", correct:"zěn", wrong:"zěng", words:["怎么","怎样"], hook:"怎么的“怎”，前鼻音收 n。" },
+      { zi:"森", correct:"sēn", wrong:"sēng", words:["森林","阴森"], hook:"森林的“森”，前鼻音收 n。" },
+      { zi:"嫩", correct:"nèn", wrong:"nèng", words:["嫩绿","鲜嫩"], hook:"嫩绿的“嫩”，前鼻音收 n。" },
+      { zi:"肯", correct:"kěn", wrong:"kěng", words:["肯定","不肯"], hook:"肯定的“肯”，前鼻音收 n。" },
+      { zi:"恨", correct:"hèn", wrong:"hèng", words:["恨意","可恨"], hook:"可恨的“恨”，前鼻音收 n。" },
+      { zi:"痕", correct:"hén", wrong:"héng", words:["痕迹","伤痕"], hook:"痕迹的“痕”，前鼻音收 n。" },
+      // ===== 后鼻音 eng =====
+      { zi:"扔", correct:"rēng", wrong:"rēn", words:["扔掉","扔球"], hook:"像把球往后脑勺一扔，舌根抬起。" },
+      { zi:"睁", correct:"zhēng", wrong:"zhēn", words:["睁眼","睁开"], hook:"眼睛睁大、舌根后抬。" },
+      { zi:"生", correct:"shēng", wrong:"shēn", words:["生日","学生"], hook:"舌根往后抬，像唱歌拖长音。" },
+      { zi:"梦", correct:"mèng", wrong:"mèn", words:["做梦","美梦"], hook:"舌根后抬，软软地往后走。" },
+      { zi:"朋", correct:"péng", wrong:"pén", words:["朋友","亲朋"], hook:"舌根抬起，别读成“盆”。" },
+      { zi:"风", correct:"fēng", wrong:"fēn", words:["大风","风筝"], hook:"舌根往后抬，像风吹到后脑勺。" },
+      { zi:"声", correct:"shēng", wrong:"shēn", words:["声音","大声"], hook:"舌根后抬，声音往后上方走。" },
+      { zi:"正", correct:"zhèng", wrong:"zhèn", words:["正在","正确"], hook:"舌根鼓起来，别读成“阵”。" },
+      { zi:"更", correct:"gèng", wrong:"gēn", words:["更加","更好"], hook:"舌根往后抬，喉咙里响一下。" },
+      { zi:"冷", correct:"lěng", wrong:"lěn", words:["寒冷","冷淡"], hook:"舌根抬起，别读成“嫩”。" },
+      { zi:"等", correct:"děng", wrong:"děn", words:["等待","等于"], hook:"舌根抬起稳稳收住，像耐心等人。" },
+      { zi:"能", correct:"néng", wrong:"nén", words:["能够","能力"], hook:"能够的“能”，舌根后抬。" },
+      { zi:"城", correct:"chéng", wrong:"chén", words:["城市","长城"], hook:"城市的“城”，后鼻音，别读成“陈”。" },
+      { zi:"争", correct:"zhēng", wrong:"zhēn", words:["争取","争吵"], hook:"争取的“争”，后鼻音，别读成“真”。" },
+      { zi:"整", correct:"zhěng", wrong:"zhěn", words:["整齐","整个"], hook:"整齐的“整”，后鼻音。" },
+      { zi:"证", correct:"zhèng", wrong:"zhèn", words:["证明","证件"], hook:"证明的“证”，后鼻音。" },
+      { zi:"成", correct:"chéng", wrong:"chén", words:["成功","完成"], hook:"成功的“成”，后鼻音，别读成“陈”。" },
+      { zi:"诚", correct:"chéng", wrong:"chén", words:["诚实","真诚"], hook:"诚实的“诚”，后鼻音。" },
+      { zi:"程", correct:"chéng", wrong:"chén", words:["路程","工程"], hook:"路程的“程”，后鼻音。" },
+      { zi:"称", correct:"chēng", wrong:"chēn", words:["称呼","名称"], hook:"称呼的“称”，后鼻音。" },
+      { zi:"灯", correct:"dēng", wrong:"dēn", words:["台灯","电灯"], hook:"电灯的“灯”，后鼻音。" },
+      { zi:"登", correct:"dēng", wrong:"dēn", words:["登山","登上"], hook:"登山的“登”，后鼻音。" },
+      { zi:"凳", correct:"dèng", wrong:"dèn", words:["凳子","板凳"], hook:"凳子的“凳”，后鼻音。" },
+      { zi:"疼", correct:"téng", wrong:"tén", words:["头疼","心疼"], hook:"头疼的“疼”，后鼻音。" },
+      { zi:"腾", correct:"téng", wrong:"tén", words:["奔腾","腾空"], hook:"腾空的“腾”，后鼻音。" },
+      { zi:"丰", correct:"fēng", wrong:"fēn", words:["丰收","丰富"], hook:"丰收的“丰”，后鼻音。" },
+      { zi:"蜂", correct:"fēng", wrong:"fēn", words:["蜜蜂","蜂窝"], hook:"蜜蜂的“蜂”，后鼻音。" },
+      { zi:"峰", correct:"fēng", wrong:"fēn", words:["山峰","顶峰"], hook:"山峰的“峰”，后鼻音。" },
+      { zi:"封", correct:"fēng", wrong:"fēn", words:["信封","封闭"], hook:"信封的“封”，后鼻音。" },
+      { zi:"凤", correct:"fèng", wrong:"fèn", words:["凤凰","龙凤"], hook:"凤凰的“凤”，后鼻音。" },
+      { zi:"蒙", correct:"méng", wrong:"mén", words:["蒙蒙","蒙住"], hook:"蒙蒙的“蒙”，后鼻音。" },
+      { zi:"猛", correct:"měng", wrong:"měn", words:["凶猛","猛烈"], hook:"凶猛的“猛”，后鼻音。" },
+      { zi:"萌", correct:"méng", wrong:"mén", words:["萌芽","萌发"], hook:"萌芽的“萌”，后鼻音。" },
+      { zi:"碰", correct:"pèng", wrong:"pèn", words:["碰见","碰到"], hook:"碰见的“碰”，后鼻音。" },
+      { zi:"崩", correct:"bēng", wrong:"bēn", words:["崩塌","崩溃"], hook:"崩塌的“崩”，后鼻音。" },
+      { zi:"蹦", correct:"bèng", wrong:"bèn", words:["蹦跳","蹦高"], hook:"蹦跳的“蹦”，后鼻音。" },
+      { zi:"耕", correct:"gēng", wrong:"gēn", words:["耕地","耕种"], hook:"耕地的“耕”，后鼻音。" },
+      { zi:"坑", correct:"kēng", wrong:"kēn", words:["土坑","坑洞"], hook:"土坑的“坑”，后鼻音。" },
+      { zi:"哼", correct:"hēng", wrong:"hēn", words:["哼歌","哼哼"], hook:"哼歌的“哼”，后鼻音。" },
+      { zi:"横", correct:"héng", wrong:"hén", words:["横线","横行"], hook:"横线的“横”，后鼻音。" },
+      { zi:"仍", correct:"réng", wrong:"rén", words:["仍然","仍是"], hook:"仍然的“仍”，后鼻音。" },
+      { zi:"增", correct:"zēng", wrong:"zēn", words:["增加","增长"], hook:"增加的“增”，后鼻音。" },
+      { zi:"层", correct:"céng", wrong:"cén", words:["楼层","一层"], hook:"楼层的“层”，后鼻音。" },
+      { zi:"升", correct:"shēng", wrong:"shēn", words:["上升","升起"], hook:"上升的“升”，后鼻音。" },
+      { zi:"绳", correct:"shéng", wrong:"shén", words:["绳子","跳绳"], hook:"绳子的“绳”，后鼻音。" },
+      { zi:"省", correct:"shěng", wrong:"shěn", words:["省份","节省"], hook:"省份的“省”，后鼻音。" },
+      { zi:"胜", correct:"shèng", wrong:"shèn", words:["胜利","战胜"], hook:"胜利的“胜”，后鼻音。" },
+      { zi:"盛", correct:"shèng", wrong:"shèn", words:["盛开","茂盛"], hook:"盛开的“盛”，后鼻音。" }
+    ]
+  },
+  {
+    name: "an组",
+    front: "舌尖点上门牙背，短促收 n，别让嘴巴张太大往后拖。",
+    back: "嘴巴张得大大的，舌根往后抬，喉咙里“嗡嗡”响。",
+    chars: [
+      // ===== 前鼻音 an =====
+      { zi:"山", correct:"shān", wrong:"shāng", words:["大山","高山"], hook:"舌尖点门牙背，短促收 n。" },
+      { zi:"干", correct:"gān", wrong:"gāng", words:["干净","干活"], hook:"舌尖抵门牙背，短促收 n。" },
+      { zi:"半", correct:"bàn", wrong:"bàng", words:["一半","半天"], hook:"抿嘴、顶门牙收 n，别读成“帮”。" },
+      { zi:"看", correct:"kàn", wrong:"kàng", words:["看见","观看"], hook:"舌尖抵门牙背，短促收 n。" },
+      { zi:"班", correct:"bān", wrong:"bāng", words:["班级","上班"], hook:"舌尖点门牙收 n，别读成“帮”。" },
+      { zi:"安", correct:"ān", wrong:"āng", words:["安全","安静"], hook:"舌尖轻轻点门牙，送出柔柔的 n。" },
+      { zi:"满", correct:"mǎn", wrong:"mǎng", words:["满意","满分"], hook:"满意的“满”，抿嘴收 n。" },
+      { zi:"慢", correct:"màn", wrong:"màng", words:["快慢","慢慢"], hook:"快慢的“慢”，前鼻音收 n。" },
+      { zi:"南", correct:"nán", wrong:"náng", words:["南方","南瓜"], hook:"南方的“南”，别读成“囊”。" },
+      { zi:"难", correct:"nán", wrong:"náng", words:["困难","难题"], hook:"困难的“难”，前鼻音。" },
+      { zi:"蓝", correct:"lán", wrong:"láng", words:["蓝色","蓝天"], hook:"蓝色的“蓝”，别读成“狼”。" },
+      { zi:"兰", correct:"lán", wrong:"láng", words:["兰花","木兰"], hook:"兰花的“兰”，前鼻音。" },
+      { zi:"男", correct:"nán", wrong:"náng", words:["男生","男孩"], hook:"男生的“男”，前鼻音。" },
+      { zi:"三", correct:"sān", wrong:"sāng", words:["三个","三十"], hook:"三个的“三”，短促收 n。" },
+      { zi:"饭", correct:"fàn", wrong:"fàng", words:["吃饭","米饭"], hook:"吃饭的“饭”，别读成“放”。" },
+      { zi:"然", correct:"rán", wrong:"ráng", words:["然后","突然"], hook:"然后的“然”，前鼻音。" },
+      { zi:"反", correct:"fǎn", wrong:"fǎng", words:["反面","反对"], hook:"反面的“反”，前鼻音。" },
+      { zi:"站", correct:"zhàn", wrong:"zhàng", words:["车站","站立"], hook:"车站的“站”，别读成“张”类后鼻音。" },
+      { zi:"单", correct:"dān", wrong:"dāng", words:["单个","单车"], hook:"单个的“单”，前鼻音收 n。" },
+      { zi:"但", correct:"dàn", wrong:"dàng", words:["但是","不但"], hook:"但是的“但”，前鼻音收 n。" },
+      { zi:"蛋", correct:"dàn", wrong:"dàng", words:["鸡蛋","蛋壳"], hook:"鸡蛋的“蛋”，前鼻音收 n。" },
+      { zi:"汉", correct:"hàn", wrong:"hàng", words:["汉字","汉人"], hook:"汉字的“汉”，前鼻音收 n。" },
+      { zi:"汗", correct:"hàn", wrong:"hàng", words:["出汗","汗水"], hook:"出汗的“汗”，前鼻音收 n。" },
+      { zi:"岸", correct:"àn", wrong:"àng", words:["河岸","岸边"], hook:"河岸的“岸”，前鼻音收 n。" },
+      { zi:"按", correct:"àn", wrong:"àng", words:["按时","按钮"], hook:"按时的“按”，前鼻音收 n。" },
+      { zi:"暗", correct:"àn", wrong:"àng", words:["黑暗","暗号"], hook:"黑暗的“暗”，前鼻音收 n。" },
+      { zi:"喊", correct:"hǎn", wrong:"hǎng", words:["喊叫","大喊"], hook:"喊叫的“喊”，前鼻音收 n。" },
+      { zi:"谈", correct:"tán", wrong:"táng", words:["谈话","交谈"], hook:"谈话的“谈”，前鼻音，别读成“糖”。" },
+      { zi:"弹", correct:"tán", wrong:"táng", words:["弹琴","弹跳"], hook:"弹琴的“弹”，前鼻音收 n。" },
+      { zi:"盘", correct:"pán", wrong:"páng", words:["盘子","棋盘"], hook:"盘子的“盘”，前鼻音收 n。" },
+      { zi:"办", correct:"bàn", wrong:"bàng", words:["办法","办公"], hook:"办法的“办”，前鼻音收 n。" },
+      { zi:"板", correct:"bǎn", wrong:"bǎng", words:["木板","黑板"], hook:"木板的“板”，前鼻音收 n。" },
+      { zi:"般", correct:"bān", wrong:"bāng", words:["一般","这般"], hook:"一般的“般”，前鼻音收 n。" },
+      // ===== 后鼻音 ang =====
+      { zi:"上", correct:"shàng", wrong:"shàn", words:["上学","前后"], hook:"嘴巴张大、舌根后抬，别读成“扇”。" },
+      { zi:"方", correct:"fāng", wrong:"fān", words:["方向","四方"], hook:"舌根后抬、嘴巴张大，喉咙嗡嗡响。" },
+      { zi:"帮", correct:"bāng", wrong:"bān", words:["帮助","帮忙"], hook:"嘴巴张大、舌根后抬，别读成“班”。" },
+      { zi:"放", correct:"fàng", wrong:"fàn", words:["放学","放下"], hook:"嘴巴张大、舌根后抬，别读成“饭”。" },
+      { zi:"长", correct:"cháng", wrong:"chán", words:["长短","很长"], hook:"长短的“长”，舌根后抬，别读成“缠”。" },
+      { zi:"张", correct:"zhāng", wrong:"zhān", words:["张开","一张"], hook:"张开的“张”，后鼻音。" },
+      { zi:"忙", correct:"máng", wrong:"mán", words:["帮忙","急忙"], hook:"帮忙的“忙”，后鼻音。" },
+      { zi:"当", correct:"dāng", wrong:"dān", words:["当然","应当"], hook:"当然的“当”，舌根后抬。" },
+      { zi:"堂", correct:"táng", wrong:"tán", words:["课堂","礼堂"], hook:"课堂的“堂”，后鼻音。" },
+      { zi:"糖", correct:"táng", wrong:"tán", words:["糖果","白糖"], hook:"甜甜的糖，后鼻音嗡嗡响。" },
+      { zi:"让", correct:"ràng", wrong:"ràn", words:["让开","让步"], hook:"让开的“让”，舌根后抬。" },
+      { zi:"唱", correct:"chàng", wrong:"chàn", words:["唱歌","唱片"], hook:"唱歌的“唱”，后鼻音拖长。" },
+      { zi:"常", correct:"cháng", wrong:"chán", words:["经常","非常"], hook:"经常的“常”，后鼻音。" },
+      { zi:"汤", correct:"tāng", wrong:"tān", words:["喝汤","汤圆"], hook:"喝汤的“汤”，后鼻音。" },
+      { zi:"胖", correct:"pàng", wrong:"pàn", words:["胖子","肥胖"], hook:"胖子的“胖”，后鼻音。" },
+      { zi:"旁", correct:"páng", wrong:"pán", words:["旁边","身旁"], hook:"旁边的“旁”，后鼻音。" },
+      { zi:"厂", correct:"chǎng", wrong:"chǎn", words:["工厂","厂房"], hook:"工厂的“厂”，后鼻音。" },
+      { zi:"场", correct:"chǎng", wrong:"chǎn", words:["操场","广场"], hook:"操场的“场”，后鼻音。" },
+      { zi:"伤", correct:"shāng", wrong:"shān", words:["伤心","受伤"], hook:"伤心的“伤”，后鼻音。" },
+      { zi:"商", correct:"shāng", wrong:"shān", words:["商店","商量"], hook:"商店的“商”，后鼻音。" },
+      { zi:"尝", correct:"cháng", wrong:"chán", words:["尝试","品尝"], hook:"尝试的“尝”，后鼻音。" },
+      { zi:"赏", correct:"shǎng", wrong:"shǎn", words:["欣赏","观赏"], hook:"欣赏的“赏”，后鼻音。" },
+      { zi:"浪", correct:"làng", wrong:"làn", words:["波浪","海浪"], hook:"波浪的“浪”，后鼻音。" },
+      { zi:"刚", correct:"gāng", wrong:"gān", words:["刚才","刚刚"], hook:"刚才的“刚”，后鼻音。" },
+      { zi:"缸", correct:"gāng", wrong:"gān", words:["水缸","鱼缸"], hook:"水缸的“缸”，后鼻音。" },
+      { zi:"康", correct:"kāng", wrong:"kān", words:["健康","安康"], hook:"健康的“康”，后鼻音。" },
+      { zi:"航", correct:"háng", wrong:"hán", words:["航行","航空"], hook:"航行的“航”，后鼻音。" },
+      { zi:"藏", correct:"cáng", wrong:"cán", words:["躲藏","收藏"], hook:"躲藏的“藏”，后鼻音。" },
+      { zi:"桑", correct:"sāng", wrong:"sān", words:["桑树","桑叶"], hook:"桑树的“桑”，后鼻音。" },
+      { zi:"脏", correct:"zāng", wrong:"zān", words:["脏了","弄脏"], hook:"弄脏的“脏”，后鼻音。" },
+      { zi:"仓", correct:"cāng", wrong:"cān", words:["仓库","粮仓"], hook:"仓库的“仓”，后鼻音。" }
+    ]
+  },
+  {
+    name: "uan组",
+    front: "先圆起小嘴，再舌尖点门牙收 n，短促有力。",
+    back: "圆嘴张大，舌根往后抬，让声音在喉咙后“嗡嗡”响。",
+    chars: [
+      // ===== 前鼻音 uan / üan =====
+      { zi:"关", correct:"guān", wrong:"guāng", words:["关门","关心"], hook:"圆起小嘴收 n，别读成阳光的“光”。" },
+      { zi:"官", correct:"guān", wrong:"guāng", words:["当官","警官"], hook:"当官的“官”，别读成“光”。" },
+      { zi:"完", correct:"wán", wrong:"wáng", words:["完成","完了"], hook:"完成的“完”，别读成国王的“王”。" },
+      { zi:"玩", correct:"wán", wrong:"wáng", words:["玩耍","好玩"], hook:"玩耍的“玩”，别读成“王”。" },
+      { zi:"船", correct:"chuán", wrong:"chuáng", words:["小船","飞船"], hook:"小船的“船”，圆唇顶门牙，别读成“床”。" },
+      { zi:"全", correct:"quán", wrong:"quáng", words:["全部","安全"], hook:"全部的“全”，圆唇收 n。" },
+      { zi:"圆", correct:"yuán", wrong:"yuáng", words:["圆形","圆圆的"], hook:"圆圆的“圆”，圆嘴收 n。" },
+      { zi:"园", correct:"yuán", wrong:"yuáng", words:["公园","花园"], hook:"公园的“园”，圆嘴收 n。" },
+      { zi:"远", correct:"yuǎn", wrong:"yuǎng", words:["远处","永远"], hook:"远处的“远”，圆嘴收 n。" },
+      { zi:"院", correct:"yuàn", wrong:"yuàng", words:["医院","院子"], hook:"医院的“院”，圆嘴收 n。" },
+      { zi:"原", correct:"yuán", wrong:"yuáng", words:["原来","草原"], hook:"原来的“原”，圆嘴收 n。" },
+      { zi:"愿", correct:"yuàn", wrong:"yuàng", words:["愿意","心愿"], hook:"愿意的“愿”，圆嘴收 n。" },
+      { zi:"晚", correct:"wǎn", wrong:"wǎng", words:["晚上","早晚"], hook:"晚上的“晚”，别读成“网”。" },
+      { zi:"万", correct:"wàn", wrong:"wàng", words:["千万","一万"], hook:"一万的“万”，别读成“望”。" },
+      { zi:"欢", correct:"huān", wrong:"huāng", words:["欢乐","喜欢"], hook:"欢乐的“欢”，圆嘴收 n。" },
+      { zi:"还", correct:"huán", wrong:"huáng", words:["还有","还给"], hook:"还有的“还”，圆嘴收 n。" },
+      { zi:"环", correct:"huán", wrong:"huáng", words:["环境","耳环"], hook:"环境的“环”，别读成“黄”。" },
+      { zi:"换", correct:"huàn", wrong:"huàng", words:["交换","换牙"], hook:"交换的“换”，圆嘴收 n。" },
+      { zi:"穿", correct:"chuān", wrong:"chuāng", words:["穿衣","穿过"], hook:"穿衣的“穿”，圆嘴收 n。" },
+      { zi:"串", correct:"chuàn", wrong:"chuàng", words:["一串","串门"], hook:"一串的“串”，圆嘴收 n。" },
+      { zi:"宽", correct:"kuān", wrong:"kuāng", words:["宽广","宽大"], hook:"宽广的“宽”，圆嘴收 n。" },
+      { zi:"端", correct:"duān", wrong:"duāng", words:["端正","一端"], hook:"端正的“端”，圆嘴收 n。" },
+      { zi:"短", correct:"duǎn", wrong:"duǎng", words:["长短","短处"], hook:"长短的“短”，圆嘴收 n。" },
+      { zi:"暖", correct:"nuǎn", wrong:"nuǎng", words:["温暖","暖和"], hook:"温暖的“暖”，圆嘴收 n。" },
+      { zi:"乱", correct:"luàn", wrong:"luàng", words:["乱跑","杂乱"], hook:"乱跑的“乱”，圆嘴收 n。" },
+      { zi:"算", correct:"suàn", wrong:"suàng", words:["计算","算术"], hook:"计算的“算”，圆嘴收 n。" },
+      { zi:"酸", correct:"suān", wrong:"suāng", words:["酸甜","酸味"], hook:"酸甜的“酸”，圆嘴收 n。" },
+      { zi:"团", correct:"tuán", wrong:"tuáng", words:["团结","面团"], hook:"团结的“团”，圆嘴收 n。" },
+      // ===== 后鼻音 uang =====
+      { zi:"光", correct:"guāng", wrong:"guān", words:["阳光","光明"], hook:"阳光的“光”，舌根后抬，别读成“关”。" },
+      { zi:"广", correct:"guǎng", wrong:"guǎn", words:["广场","广大"], hook:"广场的“广”，后鼻音，别读成“管”。" },
+      { zi:"王", correct:"wáng", wrong:"wán", words:["国王","王后"], hook:"国王的“王”，后鼻音，别读成“完”。" },
+      { zi:"往", correct:"wǎng", wrong:"wǎn", words:["来往","往后"], hook:"来往的“往”，后鼻音，别读成“晚”。" },
+      { zi:"网", correct:"wǎng", wrong:"wǎn", words:["网络","渔网"], hook:"网络的“网”，后鼻音，别读成“晚”。" },
+      { zi:"望", correct:"wàng", wrong:"wàn", words:["希望","看望"], hook:"希望的“望”，后鼻音，别读成“万”。" },
+      { zi:"忘", correct:"wàng", wrong:"wàn", words:["忘记","难忘"], hook:"忘记的“忘”，后鼻音。" },
+      { zi:"黄", correct:"huáng", wrong:"huán", words:["黄色","黄瓜"], hook:"黄色的“黄”，后鼻音，别读成“环”。" },
+      { zi:"荒", correct:"huāng", wrong:"huān", words:["荒地","荒凉"], hook:"荒地的“荒”，后鼻音。" },
+      { zi:"晃", correct:"huàng", wrong:"huàn", words:["摇晃","晃动"], hook:"摇晃的“晃”，后鼻音。" },
+      { zi:"床", correct:"chuáng", wrong:"chuán", words:["床铺","起床"], hook:"床铺的“床”，后鼻音，别读成“船”。" },
+      { zi:"窗", correct:"chuāng", wrong:"chuān", words:["窗户","窗台"], hook:"窗户的“窗”，后鼻音。" },
+      { zi:"双", correct:"shuāng", wrong:"shuān", words:["双手","一双"], hook:"双手的“双”，后鼻音。" },
+      { zi:"霜", correct:"shuāng", wrong:"shuān", words:["霜冻","冰霜"], hook:"霜冻的“霜”，后鼻音。" },
+      { zi:"庄", correct:"zhuāng", wrong:"zhuān", words:["村庄","庄稼"], hook:"村庄的“庄”，后鼻音。" },
+      { zi:"装", correct:"zhuāng", wrong:"zhuān", words:["服装","装扮"], hook:"服装的“装”，后鼻音。" },
+      { zi:"壮", correct:"zhuàng", wrong:"zhuàn", words:["强壮","壮大"], hook:"强壮的“壮”，后鼻音。" },
+      { zi:"创", correct:"chuàng", wrong:"chuàn", words:["创造","创作"], hook:"创造的“创”，后鼻音。" },
+      { zi:"矿", correct:"kuàng", wrong:"kuàn", words:["矿石","煤矿"], hook:"矿石的“矿”，后鼻音。" },
+      { zi:"狂", correct:"kuáng", wrong:"kuán", words:["狂风","狂欢"], hook:"狂风的“狂”，后鼻音。" }
+    ]
+  },
+  {
+    name: "ian组",
+    front: "嘴角往两边咧开，舌尖点上门牙背收 n，声音亮亮地停在前。",
+    back: "嘴巴张得开开的，舌根往后抬，声音往喉咙后方走。",
+    chars: [
+      // ===== 前鼻音 ian =====
+      { zi:"前", correct:"qián", wrong:"qiáng", words:["前面","前后"], hook:"前后的“前”，别读成“强”。" },
+      { zi:"天", correct:"tiān", wrong:"tiāng", words:["蓝天","天空"], hook:"蓝天的“天”，嘴角咧开收 n。" },
+      { zi:"田", correct:"tián", wrong:"tiáng", words:["田地","农田"], hook:"田地的“田”，收 n 尾巴。" },
+      { zi:"甜", correct:"tián", wrong:"tiáng", words:["甜甜的","香甜"], hook:"甜甜的“甜”，舌尖点门牙收 n。" },
+      { zi:"点", correct:"diǎn", wrong:"diǎng", words:["一点","点头"], hook:"一点的“点”，短促收 n。" },
+      { zi:"电", correct:"diàn", wrong:"diàng", words:["电灯","电视"], hook:"电灯的“电”，收 n 尾巴。" },
+      { zi:"面", correct:"miàn", wrong:"miàng", words:["面条","里面"], hook:"面条的“面”，收 n。" },
+      { zi:"边", correct:"biān", wrong:"biāng", words:["旁边","一边"], hook:"旁边的“边”，收 n。" },
+      { zi:"见", correct:"jiàn", wrong:"jiàng", words:["看见","再见"], hook:"看见的“见”，别读成“降”。" },
+      { zi:"件", correct:"jiàn", wrong:"jiàng", words:["一件","条件"], hook:"一件的“件”，收 n。" },
+      { zi:"片", correct:"piàn", wrong:"piàng", words:["一片","照片"], hook:"一片的“片”，收 n。" },
+      { zi:"先", correct:"xiān", wrong:"xiāng", words:["先生","先后"], hook:"先后的“先”，别读成“香”。" },
+      { zi:"现", correct:"xiàn", wrong:"xiàng", words:["现在","出现"], hook:"现在的“现”，别读成“向”。" },
+      { zi:"年", correct:"nián", wrong:"niáng", words:["过年","新年"], hook:"过年的“年”，别读成“娘”。" },
+      { zi:"连", correct:"lián", wrong:"liáng", words:["连忙","连接"], hook:"连忙的“连”，收 n，别读成“凉”。" },
+      { zi:"脸", correct:"liǎn", wrong:"liǎng", words:["洗脸","脸蛋"], hook:"洗脸的“脸”，收 n，别读成“两”。" },
+      { zi:"眼", correct:"yǎn", wrong:"yǎng", words:["眼睛","眼泪"], hook:"眼睛的“眼”，收 n。" },
+      { zi:"言", correct:"yán", wrong:"yáng", words:["语言","发言"], hook:"语言的“言”，收 n。" },
+      { zi:"烟", correct:"yān", wrong:"yāng", words:["烟花","香烟"], hook:"烟花的“烟”，收 n。" },
+      { zi:"燕", correct:"yàn", wrong:"yàng", words:["燕子","小燕"], hook:"燕子的“燕”，收 n。" },
+      { zi:"千", correct:"qiān", wrong:"qiāng", words:["一千","千万"], hook:"一千的“千”，收 n。" },
+      { zi:"变", correct:"biàn", wrong:"biàng", words:["变化","改变"], hook:"变化的“变”，收 n。" },
+      { zi:"鲜", correct:"xiān", wrong:"xiāng", words:["新鲜","鲜花"], hook:"新鲜的“鲜”，收 n。" },
+      { zi:"念", correct:"niàn", wrong:"niàng", words:["想念","念书"], hook:"想念的“念”，收 n。" },
+      { zi:"店", correct:"diàn", wrong:"diàng", words:["商店","书店"], hook:"商店的“店”，收 n。" },
+      { zi:"建", correct:"jiàn", wrong:"jiàng", words:["建设","建立"], hook:"建设的“建”，收 n。" },
+      { zi:"肩", correct:"jiān", wrong:"jiāng", words:["肩膀","并肩"], hook:"肩膀的“肩”，收 n。" },
+      { zi:"尖", correct:"jiān", wrong:"jiāng", words:["尖尖","笔尖"], hook:"笔尖的“尖”，收 n。" },
+      { zi:"棉", correct:"mián", wrong:"miáng", words:["棉花","棉袄"], hook:"棉花的“棉”，收 n。" },
+      { zi:"眠", correct:"mián", wrong:"miáng", words:["睡眠","失眠"], hook:"睡眠的“眠”，收 n。" },
+      { zi:"免", correct:"miǎn", wrong:"miǎng", words:["免费","难免"], hook:"免费的“免”，收 n。" },
+      { zi:"便", correct:"biàn", wrong:"biàng", words:["方便","随便"], hook:"方便的“便”，收 n。" },
+      { zi:"钱", correct:"qián", wrong:"qiáng", words:["金钱","零钱"], hook:"金钱的“钱”，收 n。" },
+      // ===== 后鼻音 iang =====
+      { zi:"香", correct:"xiāng", wrong:"xiān", words:["香味","香甜"], hook:"香香的“香”，舌根后抬，别读成“先”。" },
+      { zi:"想", correct:"xiǎng", wrong:"xiǎn", words:["想念","想法"], hook:"想念的“想”，舌根后抬，别读成“显”。" },
+      { zi:"向", correct:"xiàng", wrong:"xiàn", words:["方向","向前"], hook:"方向的“向”，后鼻音，别读成“现”。" },
+      { zi:"像", correct:"xiàng", wrong:"xiàn", words:["好像","画像"], hook:"好像的“像”，后鼻音。" },
+      { zi:"响", correct:"xiǎng", wrong:"xiǎn", words:["响亮","响声"], hook:"响亮的“响”，后鼻音。" },
+      { zi:"亮", correct:"liàng", wrong:"liàn", words:["明亮","天亮"], hook:"明亮的“亮”，后鼻音，别读成“恋”。" },
+      { zi:"凉", correct:"liáng", wrong:"lián", words:["凉快","冰凉"], hook:"凉快的“凉”，后鼻音。" },
+      { zi:"两", correct:"liǎng", wrong:"liǎn", words:["两个","两人"], hook:"两个的“两”，后鼻音，别读成“脸”。" },
+      { zi:"阳", correct:"yáng", wrong:"yán", words:["太阳","阳光"], hook:"太阳的“阳”，后鼻音。" },
+      { zi:"样", correct:"yàng", wrong:"yàn", words:["一样","样子"], hook:"一样的“样”，后鼻音。" },
+      { zi:"江", correct:"jiāng", wrong:"jiān", words:["长江","江水"], hook:"长江的“江”，后鼻音。" },
+      { zi:"讲", correct:"jiǎng", wrong:"jiǎn", words:["讲话","讲课"], hook:"讲话的“讲”，后鼻音。" },
+      { zi:"奖", correct:"jiǎng", wrong:"jiǎn", words:["奖励","奖品"], hook:"奖励的“奖”，后鼻音。" },
+      { zi:"强", correct:"qiáng", wrong:"qián", words:["强大","强壮"], hook:"强大的“强”，后鼻音，别读成“前”。" },
+      { zi:"乡", correct:"xiāng", wrong:"xiān", words:["家乡","乡村"], hook:"家乡的“乡”，后鼻音。" },
+      { zi:"相", correct:"xiāng", wrong:"xiān", words:["相信","相互"], hook:"相信的“相”，后鼻音。" },
+      { zi:"箱", correct:"xiāng", wrong:"xiān", words:["箱子","冰箱"], hook:"箱子的“箱”，后鼻音。" },
+      { zi:"良", correct:"liáng", wrong:"lián", words:["良好","优良"], hook:"良好的“良”，后鼻音。" },
+      { zi:"粮", correct:"liáng", wrong:"lián", words:["粮食","口粮"], hook:"粮食的“粮”，后鼻音。" },
+      { zi:"杨", correct:"yáng", wrong:"yán", words:["杨树","姓杨"], hook:"杨树的“杨”，后鼻音。" },
+      { zi:"养", correct:"yǎng", wrong:"yǎn", words:["养育","培养"], hook:"养育的“养”，后鼻音。" },
+      { zi:"娘", correct:"niáng", wrong:"nián", words:["姑娘","爹娘"], hook:"姑娘的“娘”，后鼻音。" },
+      { zi:"墙", correct:"qiáng", wrong:"qián", words:["墙壁","围墙"], hook:"墙壁的“墙”，后鼻音。" },
+      { zi:"抢", correct:"qiǎng", wrong:"qiǎn", words:["抢夺","抢先"], hook:"抢夺的“抢”，后鼻音。" }
+    ]
+  }
+];
+
+/* 扁平化：每个字附带所属组名 */
+const DATA = [];
+GROUPS.forEach(function (g) {
+  g.chars.forEach(function (c) {
+    DATA.push({ zi: c.zi, correct: c.correct, wrong: c.wrong, words: c.words, hook: c.hook, group: g.name });
+  });
+});
+const TOTAL = DATA.length;
+
+/* 判断该字正确读音是前鼻音还是后鼻音（-n 结尾 = 前鼻音，-ng 结尾 = 后鼻音） */
+function isBack(item) { return /ng$/.test(item.correct); }
+
+function muscleText(item) {
+  const g = GROUPS.find(function (x) { return x.name === item.group; });
+  if (!g) return '';
+  return isBack(item) ? g.back : g.front;
+}
+function buildTip(item) {
+  let tip = muscleText(item) + item.hook;
+  const g = GROUPS.find(function (x) { return x.name === item.group; });
+  // in组 前鼻音（收 n）生字常混，附上顺口溜帮助记忆
+  if (g && g.jingleFront && !isBack(item)) {
+    tip += '<div class="jingle"><div class="jingle-title">🎶 in组前鼻音顺口溜</div><div class="jingle-body">' + g.jingleFront + '</div></div>';
+  }
+  return tip;
+}
+
+/* ================= 已学会状态（localStorage 持久化） ================= */
+const STORAGE_KEY = 'dsh.qianhoubiyin.learned.v1';
+const GROUP_COLOR = { 'in组': '#29B6F6', 'en组': '#FF7043', 'an组': '#66BB6A', 'uan组': '#AB47BC', 'ian组': '#EC407A' };
+let LEARNED = {};   // zi -> true（已学会）
+let STREAKS = {};   // zi -> 连续正确次数
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      LEARNED = s.learned || {};
+      STREAKS = s.streaks || {};
+    }
+  } catch (e) { LEARNED = {}; STREAKS = {}; }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ learned: LEARNED, streaks: STREAKS })); } catch (e) {}
+}
+function isLearned(zi) { return !!LEARNED[zi]; }
+function getActive() { return DATA.filter(function (d) { return !isLearned(d.zi); }); }
+
+/* ================= 通用工具 ================= */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+// 组词里的目标字标红加粗（全部出现处都突出）
+function highlightWords(item) {
+  return item.words.map(function (w) {
+    return w.split(item.zi).join('<span class="hl">' + item.zi + '</span>');
+  }).join('　');
+}
+
+/* ================= Tab 切换 ================= */
+function switchTab(which) {
+  const map = {
+    memory: { panel: 'memoryPanel', tab: 'tabMemory' },
+    learn: { panel: 'learnPanel', tab: 'tabLearn' },
+    test: { panel: 'testPanel', tab: 'tabTest' },
+    learned: { panel: 'learnedPanel', tab: 'tabLearned' }
+  };
+  Object.keys(map).forEach(function (k) {
+    document.getElementById(map[k].panel).classList.toggle('show', k === which);
+    document.getElementById(map[k].tab).classList.toggle('active', k === which);
+  });
+  if (which !== 'learn') {
+    document.getElementById('learnNext').classList.remove('show'); // 离开学一学时收起“下一个”
+  }
+  if (which === 'learned') {
+    renderLearned();
+  }
+}
+
+/* ================= 板块一：学一学 ================= */
+let learnIndex = 0;
+let learnRevealed = false;
+let learnAnswered = false;
+let learnOptions = [];
+let learnActive = [];
+let learnCorrectEl = null, learnWrongEl = null, learnUncertainEl = null;
+
+function renderLearn() {
+  const act = getActive();
+  if (act.length === 0) { showLearnEmpty(); return; }
+  if (learnIndex >= act.length) learnIndex = 0;
+  const item = act[learnIndex];
+  learnActive = act;
+
+  learnRevealed = false;
+  learnAnswered = false;
+  learnOptions = shuffle([
+    { pinyin: item.correct, isCorrect: true },
+    { pinyin: item.wrong, isCorrect: false }
+  ]);
+
+  document.getElementById('learnCounter').textContent = (learnIndex + 1) + ' / ' + act.length;
+  const gt = document.getElementById('learnGroup');
+  gt.textContent = item.group;
+  gt.className = 'group-tag ' + item.group.replace('组', '');
+  document.getElementById('learnFill').style.width = (learnIndex / act.length * 100) + '%';
+  document.getElementById('learnChar').textContent = item.zi;
+  document.getElementById('learnWords').innerHTML = highlightWords(item);
+
+  const wrap = document.getElementById('learnOptions');
+  wrap.innerHTML = '';
+  const labels = ['A', 'B'];
+  learnCorrectEl = null; learnWrongEl = null;
+  learnOptions.forEach(function (opt, idx) {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="opt-label">' + labels[idx] + '</span><span class="opt-pinyin">' + opt.pinyin + '</span>';
+    btn.onclick = function () { handleLearnOption(btn, opt.isCorrect); };
+    wrap.appendChild(btn);
+    if (opt.isCorrect) learnCorrectEl = btn; else learnWrongEl = btn;
+  });
+  const unc = document.createElement('button');
+  unc.className = 'opt-btn uncertain';
+  unc.innerHTML = '<span class="opt-label">C</span><span class="opt-pinyin">不确定 🤔</span>';
+  unc.onclick = function () { handleLearnOption(unc, false); };
+  wrap.appendChild(unc);
+  learnUncertainEl = unc;
+
+  document.getElementById('learnFeedback').classList.remove('show');
+  document.getElementById('learnSuccess').style.display = 'none';
+  document.getElementById('learnTip').style.display = 'none';
+  document.getElementById('learnNext').classList.remove('show');
+}
+
+function showLearnEmpty() {
+  document.getElementById('learnCounter').textContent = '0 / 0';
+  const gt = document.getElementById('learnGroup');
+  gt.textContent = '全部学会';
+  gt.className = 'group-tag';
+  document.getElementById('learnFill').style.width = '100%';
+  document.getElementById('learnChar').textContent = '🎉';
+  document.getElementById('learnWords').innerHTML = '太棒啦，所有生字都已经学会咯！';
+  document.getElementById('learnOptions').innerHTML = '';
+  document.getElementById('learnFeedback').classList.remove('show');
+  document.getElementById('learnSuccess').style.display = 'none';
+  document.getElementById('learnTip').style.display = 'none';
+  document.getElementById('learnNext').classList.remove('show');
+}
+
+function handleLearnOption(el, isCorrect) {
+  if (learnAnswered) return;
+  const item = learnActive[learnIndex];
+
+  if (!isCorrect) {
+    if (learnRevealed) return;
+    learnRevealed = true;
+    learnCorrectEl.classList.add('is-correct');
+    const tip = document.getElementById('learnTip');
+    tip.innerHTML = '<div class="tip-title">💡 拼音小魔法（记忆法）</div><div class="tip-body">' + buildTip(item) + '</div>';
+    tip.style.display = 'block';
+    document.getElementById('learnFeedback').classList.add('show');
+    return;
+  }
+
+  learnAnswered = true;
+  learnCorrectEl.classList.add('is-correct');
+  learnWrongEl.classList.add('disabled');
+  learnUncertainEl.classList.add('disabled');
+
+  document.getElementById('learnSuccess').style.display = 'block';
+  document.getElementById('learnFeedback').classList.add('show');
+  document.getElementById('learnNext').classList.add('show');
+}
+
+function nextLearn() {
+  const act = getActive();
+  if (act.length === 0) { showLearnEmpty(); return; }
+  learnIndex = (learnIndex + 1) % act.length;
+  renderLearn();
+}
+
+/* ================= 板块二：测一测 ================= */
+const TEST_SIZE = 50;   // 每次随机抽取 50 个字测试
+let testOrder = [];
+let testOptions = [];
+let testAnswers = [];
+let testQ = 0;
+
+function startTest() {
+  const actIdx = [];
+  DATA.forEach(function (d, i) { if (!isLearned(d.zi)) actIdx.push(i); });
+  // 随机抽取 TEST_SIZE 个字（不足则全部）
+  const count = Math.min(TEST_SIZE, actIdx.length);
+  testOrder = shuffle(actIdx).slice(0, count);
+  testOptions = [];
+  testAnswers = new Array(testOrder.length).fill(null);
+  for (let q = 0; q < testOrder.length; q++) {
+    const item = DATA[testOrder[q]];
+    testOptions.push(shuffle([
+      { pinyin: item.correct, isCorrect: true },
+      { pinyin: item.wrong, isCorrect: false }
+    ]));
+  }
+  testQ = 0;
+  document.getElementById('testBody').style.display = 'block';
+  document.getElementById('testReport').classList.remove('show');
+  document.getElementById('testReport').style.display = 'none';
+  renderTest();
+}
+
+function allAnswered() {
+  return testAnswers.length > 0 && testAnswers.every(function (a) { return a !== null; });
+}
+
+function renderTest() {
+  if (testOrder.length === 0) {
+    document.getElementById('testCounter').textContent = '已全部学会 🎉';
+    document.getElementById('testChar').textContent = '🎉';
+    document.getElementById('testWords').innerHTML = '所有生字都已经学会啦，去「已学会」看看吧！';
+    document.getElementById('testOptions').innerHTML = '';
+    document.getElementById('testPrev').disabled = true;
+    document.getElementById('testNext').disabled = true;
+    document.getElementById('testSubmit').classList.remove('show');
+    return;
+  }
+  const item = DATA[testOrder[testQ]];
+  document.getElementById('testCounter').textContent = '第 ' + (testQ + 1) + ' 题 / 共 ' + testOrder.length + ' 题';
+  document.getElementById('testChar').textContent = item.zi;
+  document.getElementById('testWords').innerHTML = highlightWords(item);
+
+  const wrap = document.getElementById('testOptions');
+  wrap.innerHTML = '';
+  const labels = ['A', 'B'];
+  const opts = testOptions[testQ];
+  const chosen = testAnswers[testQ];
+  opts.forEach(function (opt, idx) {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn test-opt' + (chosen === idx ? ' chosen' : '');
+    btn.innerHTML = '<span class="opt-label">' + labels[idx] + '</span><span class="opt-pinyin">' + opt.pinyin + '</span>';
+    btn.onclick = function () { handleTestOption(idx); };
+    wrap.appendChild(btn);
+  });
+
+  document.getElementById('testPrev').disabled = (testQ === 0);
+  document.getElementById('testNext').disabled = (testQ === testOrder.length - 1);
+
+  const sub = document.getElementById('testSubmit');
+  if (allAnswered()) sub.classList.add('show'); else sub.classList.remove('show');
+}
+
+function handleTestOption(idx) {
+  testAnswers[testQ] = idx;
+  if (testQ < testOrder.length - 1) testQ++;
+  renderTest();
+}
+
+function testPrev() {
+  if (testQ > 0) { testQ--; renderTest(); }
+}
+
+function testNext() {
+  if (testQ < testOrder.length - 1) { testQ++; renderTest(); }
+}
+
+function submitTest() {
+  if (testOrder.length === 0) return;
+  let correctCount = 0;
+  const wrongList = [];
+  const newlyLearned = [];
+  for (let q = 0; q < testOrder.length; q++) {
+    const item = DATA[testOrder[q]];
+    const idx = testAnswers[q];
+    const opt = idx === null ? null : testOptions[q][idx];
+    const correct = !!(opt && opt.isCorrect);
+
+    // 连续正确统计：连续三次测试答对 → 进入“已学会”
+    if (correct) {
+      STREAKS[item.zi] = (STREAKS[item.zi] || 0) + 1;
+      if (STREAKS[item.zi] >= 3 && !LEARNED[item.zi]) {
+        LEARNED[item.zi] = true;
+        newlyLearned.push(item.zi);
+      }
+    } else {
+      STREAKS[item.zi] = 0;
+    }
+
+    if (correct) {
+      correctCount++;
+    } else {
+      wrongList.push({ item: item, chosen: opt ? opt.pinyin : '未作答', correct: item.correct });
+    }
+  }
+  saveState();
+
+  const score = Math.round(correctCount / testOrder.length * 100); // 满分 100，按答对比例计分
+  document.getElementById('testBody').style.display = 'none';
+  document.getElementById('testReport').classList.add('show');
+  document.getElementById('testReport').style.display = 'block';
+
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreSub').textContent = '答对 ' + correctCount + ' 题 / 共 ' + testOrder.length + ' 题（满分 100 分）';
+
+  let praise = '';
+  if (score === 100) praise = '🏅 拼音小达人！';
+  else if (score >= 80) praise = '🥈 太厉害了，继续加油！';
+  else praise = '💪 别气馁，我们再练练！';
+  document.getElementById('praiseText').textContent = praise;
+
+  const note = document.getElementById('newLearnedNote');
+  if (newlyLearned.length > 0) {
+    note.textContent = '🎓 本次新学会了：' + newlyLearned.join('、') + '（已进入「已学会」板块）';
+  } else {
+    note.textContent = '';
+  }
+
+  const wrongListEl = document.getElementById('wrongList');
+  wrongListEl.innerHTML = '';
+  const wrongTitle = document.getElementById('wrongTitle');
+  const perfectNote = document.getElementById('perfectNote');
+
+  if (wrongList.length === 0) {
+    wrongTitle.style.display = 'none';
+    perfectNote.style.display = 'block';
+  } else {
+    wrongTitle.style.display = 'block';
+    perfectNote.style.display = 'none';
+    wrongList.forEach(function (w) {
+      const card = document.createElement('div');
+      card.className = 'wrong-card';
+      card.innerHTML =
+        '<div class="wrong-head">' +
+          '<span class="wrong-zi">' + w.item.zi + '</span>' +
+          '<span class="wrong-line">你的答案：<span class="ur">' + w.chosen + '</span>　|　正确答案：<span class="ok">' + w.correct + '</span></span>' +
+        '</div>' +
+        '<div class="tip-card">' +
+          '<div class="tip-title">💡 拼音小魔法（记忆法）</div>' +
+          '<div class="tip-body">' + buildTip(w.item) + '</div>' +
+        '</div>';
+      wrongListEl.appendChild(card);
+    });
+  }
+  renderLearned();
+  renderLearn();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ================= 板块三：已学会 ================= */
+function renderLearned() {
+  const list = DATA.filter(function (d) { return LEARNED[d.zi]; });
+  document.getElementById('learnedCount').textContent = '已学会 ' + list.length + ' 个字';
+  document.getElementById('clearAllBtn').disabled = (list.length === 0);
+  const wrap = document.getElementById('learnedList');
+  wrap.innerHTML = '';
+  if (list.length === 0) {
+    wrap.innerHTML = '<div class="learned-empty"><span class="big">🏆</span>还没有已学会的生字哦～<br>连续三次测试都答对，生字就会来到这里！</div>';
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'learned-grid';
+  list.forEach(function (item) {
+    const card = document.createElement('div');
+    card.className = 'learned-card';
+    card.innerHTML =
+      '<div class="l-zi">' + item.zi + '</div>' +
+      '<div class="l-pinyin">' + item.correct + '</div>' +
+      '<div class="l-group" style="background:' + (GROUP_COLOR[item.group] || '#999') + ';">' + item.group + '</div>' +
+      '<div class="l-words">' + highlightWords(item) + '</div>' +
+      '<button class="remove-btn" data-zi="' + item.zi + '">🗑️ 移除</button>';
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+
+  wrap.querySelectorAll('.remove-btn').forEach(function (btn) {
+    btn.onclick = function () { removeLearned(btn.getAttribute('data-zi')); };
+  });
+}
+
+function removeLearned(zi) {
+  delete LEARNED[zi];
+  STREAKS[zi] = 0; // 移除后重新计连续次数
+  saveState();
+  renderLearned();
+  renderLearn();   // 该字重新回到学一学
+  startTest();     // 该字重新回到测一测
+}
+
+function removeAllLearned() {
+  if (Object.keys(LEARNED).length === 0) return;
+  if (typeof confirm === 'function' && !confirm('确定要把已学会的生字全部移除吗？它们会重新回到「学一学」和「测一测」。')) {
+    return;
+  }
+  LEARNED = {};
+  STREAKS = {};
+  saveState();
+  renderLearned();
+  renderLearn();   // 所有字重新回到学一学
+  startTest();     // 所有字重新回到测一测
+}
+
+/* ================= 空格键：下一个 ================= */
+document.addEventListener('keydown', function (e) {
+  if (e.code !== 'Space') return;
+  const learnPanel = document.getElementById('learnPanel');
+  const nextBtn = document.getElementById('learnNext');
+  if (!learnPanel.classList.contains('show')) return;   // 仅在“学一学”页生效
+  if (!nextBtn.classList.contains('show')) return;      // 只有出现“下一个”时才响应
+  e.preventDefault();
+  // 若焦点在某个按钮上，先失焦，避免空格再触发一次点击导致跳过两题
+  if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+    document.activeElement.blur();
+  }
+  nextLearn();
+});
+
+/* ================= 记一记：顺口溜字族 ================= */
+const MEMORY = [
+  {
+    label: '后鼻音',
+    badge: 'ng 尾巴 · 舌根后抬',
+    jingle: ['井中有冰', '铃叮咚呛', '风清气正', '方能长生'],
+    color: '#FF7043',
+    soft: '#FFF3E0',
+    families: [
+      { head: '青', pinyin: 'qīng', members: ['清', '情', '晴', '睛', '请', '精'], note: '记住了“青(qīng)”，清、情、晴、睛、请、精 全是后鼻音。' },
+      { head: '令', pinyin: 'lìng', members: ['铃', '玲', '冷', '领', '羚'], note: '记住了“令(lìng)”，铃、玲、冷、领、羚 全是后鼻音。' },
+      { head: '方', pinyin: 'fāng', members: ['放', '房', '防', '仿', '访'], note: '记住了“方(fāng)”，放、房、防、仿、访 全是后鼻音。' },
+      { head: '长', pinyin: 'cháng / zhǎng', members: ['张', '涨', '怅', '胀'], note: '身体“长”高了，手臂“张”开了，肚皮发“胀”了，全是后鼻音。' },
+      { head: '生', pinyin: 'shēng', members: ['星', '胜', '牲', '笙'], note: '“生”活很美，“星”光闪烁，全是后鼻音。' },
+      { head: '丁', pinyin: 'dīng', members: ['灯', '盯', '钉', '顶', '叮', '厅', '停'], note: '关上“灯”，“盯”着看，“叮”咚响，全是后鼻音。' },
+      { head: '风', pinyin: 'fēng', members: ['枫', '疯', '讽'], note: '⚠️ “佩”是特例（读 pèi，非后鼻音），低年级主要记前三个：枫、疯、讽。' },
+      { head: '正', pinyin: 'zhèng', members: ['证', '政', '征', '整'], note: '' },
+      { head: '中', pinyin: 'zhōng', members: ['种', '钟', '肿', '仲'], note: '' }
+    ]
+  },
+  {
+    label: '前鼻音',
+    badge: 'n 尾巴 · 舌尖抵门牙',
+    jingle: ['您今天很辛苦', '人民本分尽心', '森林宾客临门'],
+    color: '#29B6F6',
+    soft: '#E1F5FE',
+    families: [
+      { head: '分', pinyin: 'fēn', members: ['粉', '纷', '酚', '吩'], note: '记住了“分(fēn)”，粉、纷、酚、吩 全是前鼻音。' },
+      { head: '林', pinyin: 'lín', members: ['淋', '霖', '琳'], note: '记住了“林(lín)”，淋、霖、琳 全是前鼻音。' },
+      { head: '本', pinyin: 'běn', members: ['奔', '笨'], note: '看“本”书，别发“笨”，向前“奔”。（“体”是会意字，低年级主要记“奔”和“笨”）' },
+      { head: '艮', pinyin: 'gèn', members: ['很', '狠', '恨', '根', '银', '跟', '痕'], note: '右边长得像“很”字右半边的，全都是前鼻音！', important: true },
+      { head: '门', pinyin: 'mén', members: ['们', '闪', '闷', '问', '间', '闲'], note: '带“门”字框的字，基本都属于前鼻音（-n）。' },
+      { head: '民', pinyin: 'mín', members: ['眠', '泯', '抿'], note: '“民”众入“眠”，全是前鼻音。' },
+      { head: '宾', pinyin: 'bīn', members: ['滨', '槟', '摈'], note: '' }
+    ]
+  }
+];
+
+function renderMemory() {
+  const wrap = document.getElementById('memorySections');
+  if (!wrap) return;
+  let html = '';
+  MEMORY.forEach(function (sec) {
+    html += '<div class="memory-section card" style="--sec:' + sec.color + '; --sec-soft:' + sec.soft + ';">';
+    html += '<div class="memory-sec-head">' + sec.label + ' · ' + sec.badge + '</div>';
+    html += '<div class="jingle-banner">';
+    html += '<div class="jingle-label">🎵 顺口溜</div>';
+    html += '<div class="jingle-text">';
+    sec.jingle.forEach(function (g) { html += '<span class="jingle-pill">' + g + '</span>'; });
+    html += '</div></div>';
+    html += '<div class="family-grid">';
+    sec.families.forEach(function (f) {
+      const impCls = f.important ? ' important' : '';
+      html += '<div class="family-card' + impCls + '">';
+      html += '<div class="family-head">';
+      html += '<div class="family-char">' + f.head + '</div>';
+      html += '<div class="family-pinyin">' + f.pinyin + '</div>';
+      if (f.important) html += '<span class="fam-star">⭐重点</span>';
+      html += '</div>';
+      html += '<div class="family-members">';
+      f.members.forEach(function (m) { html += '<span class="fam-chip">' + m + '</span>'; });
+      html += '</div>';
+      if (f.note) html += '<div class="family-note">' + f.note + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  wrap.innerHTML = html;
+}
+
+/* ================= 初始化 ================= */
+loadState();      // 先读取已学会/连续正确进度
+renderMemory();   // 记一记：顺口溜字族
+renderLearn();
+startTest();      // 切到“测一测”前就生成题目，避免选项空白
+renderLearned();
+</script>
+</body>
+</html>

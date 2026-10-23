@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="二年级科学：太阳与影子、磁铁大力士、科学小考场，动手又动脑。">
+<title>科学探秘馆 · 二年级科学</title>
+<style>
+  :root{
+    --purple:#7c3aed; --purple-d:#6d28d9; --purple-b:#ede9fe;
+    --ink:#0f172a; --sub:#64748b; --card:#fff; --line:#e5e7eb;
+    --blue:#2563eb; --orange:#f59e0b; --green:#16a34a; --red:#e11d48;
+    --r:22px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; min-height:100vh; color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+    background:#faf7ff;
+    background-image:radial-gradient(1000px 500px at 6% -8%, #ede9fe 0%, transparent 60%),
+                     radial-gradient(900px 480px at 96% 6%, #dbeafe 0%, transparent 62%),
+                     radial-gradient(900px 480px at 50% 108%, #fef3c7 0%, transparent 60%);
+    background-attachment:fixed;
+    padding:20px 14px 50px; -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:900px; margin:0 auto;}
+
+  .top{display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+  .home{
+    flex:0 0 auto; background:#fff; border:1px solid var(--line); border-radius:999px;
+    padding:8px 14px; font-size:14px; font-weight:800; color:var(--ink);
+    text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.07); transition:.15s;
+  }
+  .home:hover{transform:translateY(-2px);}
+  .brand{
+    flex:1 1 auto; text-align:center; font-size:clamp(18px,3.6vw,24px); font-weight:800; letter-spacing:.5px;
+    color:var(--purple-d); text-shadow:0 2px 8px rgba(124,58,237,.15);
+  }
+
+  .modeTabs{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:16px;}
+  .mode{
+    border:2px solid #fff; background:rgba(255,255,255,.85); color:var(--sub);
+    border-radius:16px; padding:10px 16px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 12px rgba(15,23,42,.06); transition:.15s;
+  }
+  .mode:hover{transform:translateY(-2px);}
+  .mode.on{color:#fff; border-color:transparent; background:linear-gradient(135deg,var(--purple),#c084fc);
+    box-shadow:0 8px 20px rgba(124,58,237,.3);}
+
+  .pane{display:none;}
+  .pane.on{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    padding:20px 18px; box-shadow:0 10px 26px rgba(15,23,42,.07); margin-bottom:16px;
+  }
+  .panelTitle{font-size:17px; font-weight:800; margin:0 0 12px; color:var(--purple-d);}
+  .muted{color:var(--sub); font-size:14px; line-height:1.75;}
+  .muted b{color:var(--ink);}
+
+  .btn{
+    border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:15px;
+    border-radius:14px; padding:11px 18px; color:#fff; background:var(--purple);
+    box-shadow:0 6px 16px rgba(124,58,237,.28); transition:.15s; min-height:44px;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:disabled{opacity:.45; cursor:default; transform:none;}
+  .btn.ghost{background:#f5f3ff; color:var(--purple-d); box-shadow:none; border:1px solid var(--purple-b);}
+  .btn.blue{background:var(--blue); box-shadow:0 6px 16px rgba(37,99,235,.28);}
+  .btn.orange{background:var(--orange); box-shadow:0 6px 16px rgba(245,158,11,.28);}
+  .btn.green{background:var(--green); box-shadow:0 6px 16px rgba(22,163,74,.28);}
+  .btn.big{padding:14px 26px; font-size:17px; border-radius:16px;}
+
+  /* ===== 影子实验室 ===== */
+  .scene{border-radius:18px; overflow:hidden; border:2px solid var(--purple-b); background:#fff;}
+  .scene svg{display:block; width:100%; height:auto;}
+  .ctrlRow{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:14px; justify-content:center;}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; flex:1 1 220px; min-width:180px; height:10px;
+    border-radius:999px; background:linear-gradient(90deg,#fecaca,#fde68a,#bfdbfe); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:#fff;
+    border:3px solid var(--orange); box-shadow:0 3px 8px rgba(0,0,0,.2); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:24px; height:24px; border-radius:50%; background:#fff;
+    border:3px solid var(--orange); cursor:pointer;
+  }
+  .info{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-top:14px;
+  }
+  .infoCard{
+    background:#faf7ff; border:1px solid var(--purple-b); border-radius:14px; padding:10px 12px; text-align:center;
+  }
+  .infoCard .k{font-size:12px; color:var(--sub); font-weight:700;}
+  .infoCard .v{font-size:18px; font-weight:900; color:var(--purple-d); line-height:1.4;}
+
+  /* ===== 磁铁实验室 ===== */
+  .itemStage{
+    background:linear-gradient(160deg,#faf7ff,#eff6ff); border:2px solid var(--purple-b); border-radius:20px;
+    padding:18px 14px; text-align:center;
+  }
+  .itemEm{font-size:clamp(58px,14vw,86px); line-height:1.15;}
+  .itemName{font-size:19px; font-weight:800; margin-top:2px;}
+  .choiceRow{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+  .choiceBtn{
+    flex:1 1 160px; max-width:220px; border:2px solid var(--line); background:#fff; border-radius:16px;
+    padding:13px 10px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit;
+    color:var(--ink); min-height:56px; transition:.12s;
+  }
+  .choiceBtn:hover{transform:translateY(-2px);}
+  .choiceBtn.right{background:#dcfce7; border-color:var(--green); color:#14532d;}
+  .choiceBtn.wrong{background:#ffe4e6; border-color:var(--red); color:#9f1239;}
+  .choiceBtn:disabled{cursor:default;}
+  .bins{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  .bin{
+    border:2px dashed var(--line); border-radius:16px; padding:10px; min-height:70px;
+    background:#fafbfc;
+  }
+  .bin h4{margin:0 0 8px; font-size:14px; text-align:center;}
+  .bin .list{display:flex; flex-wrap:wrap; gap:5px; justify-content:center;}
+  .bin .chip{
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:3px 9px; font-size:13px; font-weight:700;
+  }
+  @media (max-width:480px){ .bins{grid-template-columns:1fr;} }
+
+  /* ===== 小考场 ===== */
+  .quizHead{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .pill{background:#f5f3ff; border-radius:999px; padding:6px 13px; font-size:13px; font-weight:800; color:var(--sub);}
+  .pill b{color:var(--purple-d); font-size:15px;}
+  .bar{height:9px; background:#f1f0f9; border-radius:999px; overflow:hidden; margin:8px 0 14px;}
+  .bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#c084fc,var(--purple));
+    border-radius:999px; transition:width .3s;}
+  .qBox{
+    background:linear-gradient(160deg,#faf7ff,#eff6ff); border:2px solid var(--purple-b); border-radius:20px;
+    padding:18px 16px; text-align:center;
+  }
+  .qBox .em{font-size:44px; line-height:1.1;}
+  .qBox .q{font-size:clamp(16px,3.6vw,19px); font-weight:800; line-height:1.65; margin-top:6px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:10px; margin-top:14px;}
+  .opt{
+    border:2px solid var(--line); background:#fff; border-radius:16px; padding:13px 12px;
+    font-size:15.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink);
+    min-height:54px; transition:.12s; text-align:left;
+  }
+  .opt:hover{border-color:#c4b5fd; transform:translateY(-2px);}
+  .opt.right{background:#dcfce7; border-color:var(--green); color:#14532d;}
+  .opt.wrong{background:#ffe4e6; border-color:var(--red); color:#9f1239;}
+  .opt:disabled{cursor:default;}
+  .exp{
+    margin-top:14px; border-radius:16px; padding:12px 14px; font-size:14.5px; line-height:1.75;
+    background:#f0fdf4; border:2px solid #bbf7d0; color:#166534; font-weight:700; text-align:left;
+  }
+  .exp .t{color:#15803d;}
+
+  .result{text-align:center; padding:10px 6px;}
+  .result .stars{font-size:38px; letter-spacing:6px;}
+  .result h2{margin:8px 0 6px; font-size:22px;}
+  .wrongBox{margin-top:14px; background:#fff7ed; border:2px solid #fed7aa; border-radius:16px; padding:12px 14px; text-align:left;}
+  .wrongBox .t{font-weight:800; color:#c2410c; margin-bottom:6px; font-size:14px;}
+  .wrongBox .w{display:block; margin:5px 0; font-size:13.5px; line-height:1.6;}
+
+  footer{text-align:center; color:var(--sub); font-size:13px; margin-top:22px; line-height:1.9;}
+
+  @media (max-width:560px){
+    body{padding:14px 11px 40px;}
+    .panel{padding:16px 13px;}
+    .opts{grid-template-columns:1fr;}
+    .mode{padding:9px 13px; font-size:14px;}
+    .brand{font-size:17px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <a class="home" href="index.html">🏠 首页</a>
+    <div class="brand">🔬 科学探秘馆</div>
+    <div style="width:76px;"></div>
+  </div>
+
+  <div class="modeTabs" id="modeTabs">
+    <button class="mode on" data-m="shadow">🌞 影子实验室</button>
+    <button class="mode" data-m="magnet">🧲 磁铁实验室</button>
+    <button class="mode" data-m="quiz">🎯 科学小考场</button>
+  </div>
+
+  <!-- ============ 影子实验室 ============ -->
+  <div class="pane on" id="pane-shadow">
+    <div class="panel">
+      <h2 class="panelTitle">🌞 拖动太阳，看看影子怎么变</h2>
+      <div class="scene">
+        <svg id="svg" viewBox="0 0 400 250" role="img" aria-label="太阳与影子示意图">
+          <defs>
+            <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+              <stop id="skyTop" offset="0%" stop-color="#bfdbfe"/>
+              <stop id="skyBot" offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+            <radialGradient id="gSun" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#fff7cc"/>
+              <stop offset="55%" stop-color="#fde047"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
+            </radialGradient>
+          </defs>
+          <rect id="sky" x="0" y="0" width="400" height="212" fill="url(#gSky)"/>
+          <rect x="0" y="212" width="400" height="38" fill="#8ec86a"/>
+          <rect x="0" y="212" width="400" height="6" fill="#76b455"/>
+
+          <!-- 影子 -->
+          <polygon id="shadow" points="185,214 215,214 215,214 185,214" fill="#475569" opacity="0.32"/>
+          <!-- 树 -->
+          <rect x="193" y="178" width="14" height="36" rx="3" fill="#7c4a21"/>
+          <circle cx="200" cy="168" r="30" fill="#3f9b4d"/>
+          <circle cx="178" cy="180" r="17" fill="#4faa5b"/>
+          <circle cx="222" cy="180" r="17" fill="#4faa5b"/>
+
+          <!-- 太阳 -->
+          <g id="sunGroup">
+            <circle id="sunGlow" cx="330" cy="60" r="30" fill="#fde047" opacity="0.35"/>
+            <circle id="sunBall" cx="330" cy="60" r="17" fill="url(#gSun)" stroke="#f59e0b" stroke-width="2"/>
+          </g>
+
+          <text id="lblEast" x="388" y="245" text-anchor="end" font-size="13" font-weight="700" fill="#4b5563">东 🌅</text>
+          <text id="lblWest" x="12" y="245" font-size="13" font-weight="700" fill="#4b5563">🌇 西</text>
+        </svg>
+      </div>
+
+      <div class="ctrlRow">
+        <button class="btn ghost" data-angle="18">🌅 清晨</button>
+        <input type="range" id="sunRange" min="12" max="168" value="90" step="1" aria-label="太阳位置">
+        <button class="btn ghost" data-angle="162">🌇 傍晚</button>
+      </div>
+      <div class="ctrlRow">
+        <button class="btn blue" data-angle="90">🌞 正午</button>
+      </div>
+
+      <div class="info">
+        <div class="infoCard"><div class="k">大概时间</div><div class="v" id="infoTime">中午</div></div>
+        <div class="infoCard"><div class="k">太阳在</div><div class="v" id="infoSun">南方</div></div>
+        <div class="infoCard"><div class="k">影子在</div><div class="v" id="infoShadow">北方</div></div>
+        <div class="infoCard"><div class="k">影子长度</div><div class="v" id="infoLen">最短</div></div>
+      </div>
+
+      <p class="muted" style="margin-top:14px;">
+        💡 <b>小发现：</b>影子总是躲在<b>背光的一面</b>——太阳在东边，影子就跑到西边；太阳升得越高，影子就<b>越短</b>。
+      </p>
+
+      <h2 class="panelTitle" style="margin-top:22px;">试一试：影子小问答</h2>
+      <div class="qBox">
+        <div class="em" id="sqEm">🌞</div>
+        <div class="q" id="sqText">拖动上面的太阳，先玩一玩吧！</div>
+      </div>
+      <div class="opts" id="sqOpts" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));"></div>
+      <div class="feedback muted" id="sqFb" style="text-align:center; font-weight:800; min-height:24px; margin-top:10px;"></div>
+      <div style="text-align:center; margin-top:12px;">
+        <button class="btn green" id="sqNext">🔄 换一题</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 磁铁实验室 ============ -->
+  <div class="pane" id="pane-magnet">
+    <div class="panel">
+      <h2 class="panelTitle">🧲 猜一猜：磁铁能把它们吸住吗？</h2>
+      <div class="itemStage">
+        <div class="itemEm" id="mgEm">🔩</div>
+        <div class="itemName" id="mgName">铁钉</div>
+        <div class="muted" id="mgHint" style="margin-top:6px;">它是用铁做的吗？</div>
+      </div>
+      <div class="choiceRow">
+        <button class="choiceBtn" id="mgYes">🧲 能吸住</button>
+        <button class="choiceBtn" id="mgNo">🚫 吸不住</button>
+      </div>
+      <div id="mgFb" style="text-align:center; font-weight:800; min-height:26px; margin-top:12px;"></div>
+      <div class="quizHead" style="margin-top:16px;">
+        <span class="pill">已判断 <b id="mgIdx">0</b> / <b id="mgTotal">0</b> 件</span>
+        <span class="pill">答对 <b id="mgScore">0</b> 件</span>
+      </div>
+      <div class="bar"><i id="mgBar"></i></div>
+      <div class="bins">
+        <div class="bin" style="border-color:#86efac; background:#f0fdf4;">
+          <h4 style="color:#15803d;">🧲 能被磁铁吸引</h4>
+          <div class="list" id="binYes"></div>
+        </div>
+        <div class="bin" style="border-color:#fda4af; background:#fff1f2;">
+          <h4 style="color:#9f1239;">🚫 不能被吸引</h4>
+          <div class="list" id="binNo"></div>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:14px;">
+        💡 <b>小知识：</b>磁铁能吸引用<b>铁、钴、镍</b>做成的东西；木头、塑料、玻璃、纸、布都吸不住。
+      </p>
+      <div style="text-align:center; margin-top:12px;">
+        <button class="btn ghost" id="mgRestart">🔁 重新开始</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 科学小考场 ============ -->
+  <div class="pane" id="pane-quiz">
+    <div class="panel">
+      <div class="quizHead">
+        <span class="pill">第 <b id="kIdx">1</b> / 10 题</span>
+        <span class="pill">答对 <b id="kScore">0</b> 题</span>
+      </div>
+      <div class="bar"><i id="kBar"></i></div>
+      <div class="qBox">
+        <div class="em" id="kEm">🌞</div>
+        <div class="q" id="kText">准备好了吗？点下面的按钮开始！</div>
+      </div>
+      <div class="opts" id="kOpts"></div>
+      <div class="exp" id="kExp" style="display:none;"></div>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="btn ghost" id="kNext" style="display:none;">下一题 ›</button>
+      </div>
+    </div>
+
+    <div class="panel" id="kResult" style="display:none;">
+      <div class="result">
+        <div class="stars" id="kStars">⭐️⭐️⭐️</div>
+        <h2 id="kTitle">太棒啦！</h2>
+        <p class="muted" id="kText2"></p>
+        <div class="wrongBox" id="kWrong" style="display:none;">
+          <div class="t">📌 再看一遍这几题：</div>
+          <div id="kWrongList"></div>
+        </div>
+        <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn big" id="kAgain">🔁 再来一局</button>
+          <a class="btn ghost big" href="index.html" style="text-decoration:none; line-height:22px;">🏠 回首页</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>科学探秘馆 · 二年级科学小练习<br>影子、磁铁、天气、土壤、身体……边玩边发现科学的秘密！</footer>
+</div>
+
+<script>
+function $(id){ return document.getElementById(id); }
+function shuffle(a){
+  a = a.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+/* ===================== 模式切换 ===================== */
+$("modeTabs").addEventListener("click", function(e){
+  var b = e.target.closest(".mode"); if(!b) return;
+  Array.prototype.forEach.call(this.children, function(x){ x.classList.remove("on"); });
+  b.classList.add("on");
+  var m = b.dataset.m;
+  ["shadow","magnet","quiz"].forEach(function(k){
+    $("pane-"+k).classList.toggle("on", k === m);
+  });
+});
+
+/* ===================== 一、影子实验室 ===================== */
+var RANGE = $("sunRange");
+function angleToInfo(a){
+  var rad = a * Math.PI / 180;
+  var time = a < 35 ? "清晨" : (a < 70 ? "上午" : (a < 110 ? "中午" : (a < 145 ? "下午" : "傍晚")));
+  var sun = a < 45 ? "东方（偏东）" : (a > 135 ? "西方（偏西）" : "南方（头顶）");
+  var sh  = a < 45 ? "西方" : (a > 135 ? "东方" : "北方");
+  var minA = Math.min(a, 180 - a);          // 离天顶的角度
+  var len = 26 / Math.max(Math.tan(minA*Math.PI/180), 0.18);
+  len = Math.min(Math.max(len, 10), 140);
+  var lenText = len > 90 ? "很长" : (len > 45 ? "中等" : (len > 25 ? "较短" : "最短"));
+  var sky = a < 45 ? ["#fde9c8","#fef3c7"] : (a > 135 ? ["#fed7aa","#fee2c8"] : ["#93c5fd","#dbeafe"]);
+  return { rad:rad, time:time, sun:sun, sh:sh, len:len, lenText:lenText,
+           skyTop:sky[0], skyBot:sky[1] };
+}
+function drawScene(){
+  var a = parseFloat(RANGE.value);
+  var info = angleToInfo(a);
+  var rad = info.rad;
+  var cx = 200, cy = 212, R = 128;
+  var sx = cx + R * Math.cos(rad);
+  var sy = cy - R * Math.sin(rad);
+  $("sunBall").setAttribute("cx", sx);
+  $("sunBall").setAttribute("cy", sy);
+  $("sunGlow").setAttribute("cx", sx);
+  $("sunGlow").setAttribute("cy", sy);
+
+  // 影子：与太阳方向相反
+  var dirX = -Math.cos(rad);
+  var tipX = cx + dirX * info.len;
+  var spread = 13;
+  $("shadow").setAttribute("points",
+    (cx-15)+",214 " + (cx+15)+",214 " +
+    (tipX+spread)+",208 " + (tipX-spread)+",208");
+
+  $("skyTop").setAttribute("stop-color", info.skyTop);
+  $("skyBot").setAttribute("stop-color", info.skyBot);
+
+  $("infoTime").textContent   = info.time;
+  $("infoSun").textContent    = info.sun;
+  $("infoShadow").textContent = info.sh;
+  $("infoLen").textContent    = info.lenText;
+}
+RANGE.addEventListener("input", drawScene);
+Array.prototype.forEach.call(document.querySelectorAll("[data-angle]"), function(b){
+  b.addEventListener("click", function(){
+    RANGE.value = b.dataset.angle;
+    drawScene();
+  });
+});
+drawScene();
+
+/* ---- 影子小问答 ---- */
+var SQ = [
+  { em:"🌅", q:"早晨太阳在东边，这时候大树的影子朝哪边？", opts:["西边","东边","南边","看不见"], a:0,
+    exp:"太阳和影子方向相反：太阳在东，影子就在西。" },
+  { em:"🌇", q:"傍晚太阳快落山了，这时影子朝哪边？", opts:["东边","西边","北边","影子消失"], a:0,
+    exp:"傍晚太阳在西边，影子就伸向东边。" },
+  { em:"🌞", q:"一天中什么时候影子最短？", opts:["中午","清晨","傍晚","半夜"], a:0,
+    exp:"中午太阳升得最高，照下来的影子最短。" },
+  { em:"🌳", q:"影子是怎么产生的？", opts:["光被物体挡住了","树本身是黑的","风把它吹出来的","地里长出来的"], a:0,
+    exp:"光是沿直线传播的，被不透明的物体挡住，后面就出现了影子。" },
+  { em:"🔦", q:"把手电筒拿得离玩具更近，影子会怎样？", opts:["变大","变小","不变","消失"], a:0,
+    exp:"光源离物体越近，被挡住的光越多，影子越大。" },
+  { em:"🌤️", q:"阴天没有太阳的时候，我们常常看不到影子，因为？",
+    opts:["光很弱而且到处散射","影子回家了","地面变白了","影子被风吹走"], a:0,
+    exp:"阴天光线弱而且从四面八方来，影子又淡又模糊，就看不清啦。" }
+];
+var sqCur = null;
+function newShadowQuestion(){
+  sqCur = shuffle(SQ)[0];
+  $("sqEm").textContent = sqCur.em;
+  $("sqText").textContent = sqCur.q;
+  $("sqFb").textContent = "";
+  $("sqFb").style.color = "";
+  var box = $("sqOpts");
+  box.innerHTML = "";
+  sqCur.opts.forEach(function(t, i){
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.style.textAlign = "center";
+    b.textContent = t;
+    b.onclick = function(){
+      Array.prototype.forEach.call(box.children, function(c){ c.disabled = true; });
+      if(i === sqCur.a){
+        b.classList.add("right");
+        $("sqFb").textContent = "🎉 答对啦！" + sqCur.exp;
+        $("sqFb").style.color = "#16a34a";
+      }else{
+        b.classList.add("wrong");
+        box.children[sqCur.a].classList.add("right");
+        $("sqFb").textContent = "想一想：" + sqCur.exp;
+        $("sqFb").style.color = "#e11d48";
+      }
+    };
+    box.appendChild(b);
+  });
+}
+$("sqNext").onclick = newShadowQuestion;
+newShadowQuestion();
+
+/* ===================== 二、磁铁实验室 ===================== */
+var ITEMS = [
+  { em:"🔩", n:"铁钉",     yes:true,  why:"铁做的东西，磁铁一靠近就被吸住。" },
+  { em:"📎", n:"回形针",   yes:true,  why:"回形针是钢丝做的，能被磁铁吸引。" },
+  { em:"🥄", n:"铁勺子",   yes:true,  why:"不锈钢勺子含铁，也能被吸住。" },
+  { em:"✂️", n:"剪刀",     yes:true,  why:"剪刀是钢做的，钢的主要成分是铁。" },
+  { em:"🍳", n:"铁锅",     yes:true,  why:"铁锅当然逃不过磁铁啦。" },
+  { em:"🔧", n:"螺丝刀",   yes:true,  why:"螺丝刀头是坚硬的钢铁。" },
+  { em:"🧷", n:"别针",     yes:true,  why:"别针细细的，也是铁做的。" },
+  { em:"🪵", n:"木块",     yes:false, why:"木头不是金属，磁铁吸不住。" },
+  { em:"🥤", n:"塑料杯",   yes:false, why:"塑料不含铁，吸不住。" },
+  { em:"📄", n:"白纸",     yes:false, why:"纸是植物纤维做的，吸不住。" },
+  { em:"🧽", n:"海绵",     yes:false, why:"海绵软软的，没有磁性。" },
+  { em:"🪨", n:"石头",     yes:false, why:"普通石头吸不住，只有含铁矿的才行。" },
+  { em:"🧊", n:"玻璃杯",   yes:false, why:"玻璃透明又坚硬，但磁铁对它没兴趣。" },
+  { em:"🧶", n:"毛线团",   yes:false, why:"毛线是羊毛或化纤做的，吸不住。" },
+  { em:"🍎", n:"苹果",     yes:false, why:"水果里没有铁，当然吸不住。" },
+  { em:"🥢", n:"竹筷子",   yes:false, why:"竹子是植物，磁铁吸不住。" }
+];
+var mgQueue = [], mgCur = null, mgScore = 0, mgDone = 0;
+function mgStart(){
+  mgQueue = shuffle(ITEMS);
+  mgScore = 0; mgDone = 0;
+  $("binYes").innerHTML = "";
+  $("binNo").innerHTML = "";
+  mgUpdateHead();
+  mgNext();
+}
+function mgUpdateHead(){
+  $("mgIdx").textContent = mgDone;
+  $("mgTotal").textContent = ITEMS.length;
+  $("mgScore").textContent = mgScore;
+  $("mgBar").style.width = (mgDone / ITEMS.length * 100) + "%";
+}
+function mgNext(){
+  if(!mgQueue.length){
+    $("mgEm").textContent = "🎉";
+    $("mgName").textContent = "全部完成！你太棒了";
+    $("mgHint").textContent = "共 " + ITEMS.length + " 件，答对 " + mgScore + " 件";
+    $("mgFb").textContent = mgScore >= ITEMS.length-1 ? "🏆 磁铁小专家就是你！" : "再来一次会更厉害～";
+    $("mgFb").style.color = "#16a34a";
+    mgCur = null;
+    return;
+  }
+  mgCur = mgQueue.shift();
+  $("mgEm").textContent = mgCur.em;
+  $("mgName").textContent = mgCur.n;
+  $("mgHint").textContent = "想想它是用什么做的？";
+  $("mgFb").textContent = "";
+  $("mgYes").disabled = false; $("mgNo").disabled = false;
+  $("mgYes").className = "choiceBtn"; $("mgNo").className = "choiceBtn";
+}
+function mgAnswer(guess){
+  if(!mgCur) return;
+  var ok = (guess === mgCur.yes);
+  var btn = guess ? $("mgYes") : $("mgNo");
+  var other = guess ? $("mgNo") : $("mgYes");
+  if(ok){
+    btn.classList.add("right"); mgScore++;
+  }else{
+    btn.classList.add("wrong");
+    other.classList.add("right");
+  }
+  $("mgYes").disabled = true; $("mgNo").disabled = true;
+  $("mgFb").textContent = (ok ? "✅ 答对！" : "💡 再看看：") + mgCur.why;
+  $("mgFb").style.color = ok ? "#16a34a" : "#c2410c";
+  var chip = document.createElement("span");
+  chip.className = "chip";
+  chip.textContent = mgCur.em + " " + mgCur.n;
+  (mgCur.yes ? $("binYes") : $("binNo")).appendChild(chip);
+  mgDone++; mgUpdateHead();
+  setTimeout(mgNext, 1500);
+}
+$("mgYes").onclick = function(){ mgAnswer(true); };
+$("mgNo").onclick  = function(){ mgAnswer(false); };
+$("mgRestart").onclick = mgStart;
+mgStart();
+
+/* ===================== 三、科学小考场 ===================== */
+var BANK = [
+  { em:"🌞", q:"太阳每天从哪个方向升起来？", o:["东方","西方","南方","北方"], a:0,
+    exp:"太阳东升西落，这是我们判断方向的好办法。" },
+  { em:"🌳", q:"要知道一棵树大约多粗，最直接的办法是？", o:["用绳子绕一圈再量","用眼睛随便看","数一数树叶","问一问别人"], a:0,
+    exp:"用软尺或绳子绕树一圈量周长，比用眼睛估计准确得多。" },
+  { em:"🌱", q:"土壤里一般不会有下面哪样东西？", o:["金鱼","小石子","腐殖质","空气和水"], a:0,
+    exp:"土壤里有砂、黏土、腐殖质、水、空气和小动物，但没有金鱼。" },
+  { em:"🪱", q:"被称为「土壤的好帮手」的小动物是？", o:["蚯蚓","蝴蝶","蜻蜓","麻雀"], a:0,
+    exp:"蚯蚓在土里钻来钻去，让土壤又松又肥沃。" },
+  { em:"🌡️", q:"测量气温要用什么工具？", o:["温度计","雨量器","风向标","放大镜"], a:0,
+    exp:"气温用温度计测量，常用单位是摄氏度 ℃。" },
+  { em:"🌧️", q:"想知道下了多少雨，要用什么来测？", o:["雨量器","风向标","温度计","天平"], a:0,
+    exp:"降雨量是用雨量器测量收集的雨水高度。" },
+  { em:"🎏", q:"风向标是用来观测什么的？", o:["风从哪边吹来","雨下多大","气温多高","树有多高"], a:0,
+    exp:"风向指的是风吹来的方向，例如北风就是从北方吹来的。" },
+  { em:"❄️", q:"下面哪个符号表示下雪？", o:["❄️","☀️","🌧️","⛅️"], a:0,
+    exp:"❄️ 表示雪天，外出要注意保暖防滑。" },
+  { em:"🍁", q:"树叶常常变黄飘落的季节是？", o:["秋天","春天","夏天","冬天"], a:0,
+    exp:"秋天气温下降，树叶变黄落下，是大自然在准备过冬。" },
+  { em:"🌕", q:"月相（月亮的形状）变化一个轮回大约要多久？", o:["一个月","一天","一年","一小时"], a:0,
+    exp:"月亮形状变化一个周期大约一个月，农历十五常能看到圆月。" },
+  { em:"🧲", q:"磁铁一定能吸住下面哪样东西？", o:["铁钉","木块","塑料尺","玻璃弹珠"], a:0,
+    exp:"磁铁能吸引铁、钴、镍做成的物体。" },
+  { em:"🧭", q:"指南针能指方向，是利用了什么？", o:["磁铁的性质","太阳的热量","风的流动","水的浮力"], a:0,
+    exp:"地球像一块大磁铁，磁针总是指向南北方向。" },
+  { em:"🚫", q:"把两块磁铁的 N 极和 N 极靠近，会怎样？", o:["互相推开","紧紧吸住","没有任何变化","磁铁会消失"], a:0,
+    exp:"同名磁极相斥，异名磁极相吸。" },
+  { em:"📚", q:"磁铁隔着一本薄薄的书，还能吸住回形针吗？", o:["能，隔着薄东西也可以","一定不行","只有隔着铁才行","只能在水中"], a:0,
+    exp:"磁铁隔着纸、布、塑料等薄的东西，仍然能吸引铁。" },
+  { em:"🪟", q:"做窗户一般选用玻璃，主要因为它？", o:["透明，又能挡风","很重","很便宜","会吸水"], a:0,
+    exp:"玻璃透明，能看见外面，又能挡风挡雨。" },
+  { em:"💧", q:"下面最不容易被水浸湿的是？", o:["塑料","纸巾","棉花","粉笔"], a:0,
+    exp:"塑料不吸水，所以常用它来做雨衣、水壶。" },
+  { em:"👂", q:"我们是靠哪个器官听到声音的？", o:["耳朵","眼睛","鼻子","舌头"], a:0,
+    exp:"耳朵是听觉器官，能让我们听到各种声音。" },
+  { em:"👃", q:"闭上眼睛也能闻到花香，靠的是？", o:["鼻子","耳朵","皮肤","舌头"], a:0,
+    exp:"鼻子里的嗅觉细胞能闻到气味。" },
+  { em:"🧍", q:"人的身体可以分为哪几部分？", o:["头、颈、躯干、四肢","只有头和脚","只有手和脚","只有躯干"], a:0,
+    exp:"人体分成头、颈、躯干和四肢四个部分。" },
+  { em:"⚡", q:"上课时老师拍手，我们很快跟着拍，这是在比什么？", o:["谁的反应快","谁的手大","谁的力气大","谁跳得高"], a:0,
+    exp:"这种游戏能测试我们的反应快慢，多练习会越来越快。" },
+  { em:"🍃", q:"观察植物时，下面哪种做法是对的？", o:["仔细看、记下来，不随便采摘","连根拔起来看看","把叶子全摘光","用力摇晃树干"], a:0,
+    exp:"观察时要爱护植物，只看不摘，还要注意安全。" },
+  { em:"🔍", q:"想看清蚂蚁有几条腿，最好用？", o:["放大镜","温度计","雨量器","指南针"], a:0,
+    exp:"放大镜能把小东西放大，帮我们看清细节。" }
+];
+var TOTAL_Q = 10;
+var kList = [], kIdx = 0, kScore = 0, kWrongList = [];
+function shuffleBank(list){
+  // 每题的选项顺序也要打乱
+  return list.map(function(item){
+    var pairs = item.o.map(function(t, i){ return {t:t, ok:(i === item.a)}; });
+    pairs = shuffle(pairs);
+    var ans = 0;
+    pairs.forEach(function(p, i){ if(p.ok) ans = i; });
+    return { em:item.em, q:item.q, o:pairs.map(function(p){ return p.t; }), a:ans, exp:item.exp };
+  });
+}
+function kStart(){
+  kList = shuffle(shuffleBank(BANK)).slice(0, TOTAL_Q);
+  kIdx = 0; kScore = 0; kWrongList = [];
+  $("kResult").style.display = "none";
+  $("pane-quiz").querySelector(".panel").style.display = "block";
+  kRender();
+}
+function kRender(){
+  if(kIdx >= kList.length){ kFinish(); return; }
+  var q = kList[kIdx];
+  $("kIdx").textContent = kIdx + 1;
+  $("kScore").textContent = kScore;
+  $("kBar").style.width = (kIdx / kList.length * 100) + "%";
+  $("kEm").textContent = q.em;
+  $("kText").textContent = q.q;
+  $("kExp").style.display = "none";
+  $("kNext").style.display = "none";
+  var box = $("kOpts");
+  box.innerHTML = "";
+  q.o.forEach(function(t, i){
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span style="font-weight:900; color:#7c3aed;">' +
+                  "ABCD".charAt(i) + '.</span> ' + t;
+    b.onclick = function(){ kAnswer(q, i, b, box); };
+    box.appendChild(b);
+  });
+}
+function kAnswer(q, i, btn, box){
+  Array.prototype.forEach.call(box.children, function(c){ c.disabled = true; });
+  if(i === q.a){
+    btn.classList.add("right"); kScore++;
+    $("kExp").innerHTML = '<span class="t">🎉 答对了！</span> ' + q.exp;
+  }else{
+    btn.classList.add("wrong");
+    box.children[q.a].classList.add("right");
+    kWrongList.push(q);
+    $("kExp").innerHTML = '<span class="t">📌 正确答案：' + "ABCD".charAt(q.a) + '</span> ' + q.exp;
+  }
+  $("kExp").style.display = "block";
+  $("kNext").style.display = "inline-block";
+  $("kNext").textContent = (kIdx + 1 >= kList.length) ? "看看成绩 🏆" : "下一题 ›";
+}
+$("kNext").onclick = function(){
+  kIdx++;
+  kRender();
+};
+function kFinish(){
+  var rate = kScore / kList.length;
+  var stars = rate >= 0.95 ? "⭐️⭐️⭐️" : (rate >= 0.75 ? "⭐️⭐️☆" : (rate >= 0.5 ? "⭐️☆☆" : "💪 继续加油"));
+  var title = rate >= 0.95 ? "满分小科学家！" : (rate >= 0.75 ? "很不错，继续加油！" : "别灰心，再看一遍就会啦！");
+  $("kStars").textContent = stars;
+  $("kTitle").textContent = title;
+  $("kText2").textContent = "本局 " + kList.length + " 题，答对 " + kScore + " 题。";
+  if(kWrongList.length){
+    $("kWrong").style.display = "block";
+    $("kWrongList").innerHTML = kWrongList.map(function(q){
+      return '<div class="w">• ' + q.q + '　<b>' + q.o[q.a] + '</b></div>';
+    }).join("");
+  }else{
+    $("kWrong").style.display = "none";
+  }
+  $("pane-quiz").querySelector(".panel").style.display = "none";
+  $("kResult").style.display = "block";
+  $("kResult").scrollIntoView({behavior:"smooth", block:"center"});
+}
+$("kAgain").onclick = kStart;
+kStart();
+</script>
+</body>
+</html>

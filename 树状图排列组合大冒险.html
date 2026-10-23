@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌳 树状图大冒险 · 二年级排列组合</title>
+<style>
+  :root{
+    --amber:#f59e0b; --green:#10b981; --blue:#3b82f6; --pink:#ec4899; --purple:#8b5cf6;
+    --red:#ef4444; --ink:#1f2937; --muted:#6b7280;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Heiti SC",system-ui,-apple-system,sans-serif;
+    background:linear-gradient(160deg,#fff7ed 0%,#fef3c7 40%,#dbeafe 100%);
+    min-height:100vh; color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1480px; margin:0 auto; padding:20px 22px 80px; }
+
+  /* ===== 头部 ===== */
+  header{ text-align:center; padding:10px 0 4px; }
+  header h1{ font-size:40px; margin:0; letter-spacing:2px; }
+  header h1 .tree{ display:inline-block; }
+  header p.sub{ font-size:18px; color:var(--muted); margin:8px 0 2px; }
+  .unlock-all{ margin-top:8px; font-size:14px; }
+  .unlock-all a{ color:var(--blue); cursor:pointer; text-decoration:underline; }
+
+  /* ===== 关卡标签 ===== */
+  .tabs{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin:18px 0 20px; }
+  .tab{
+    border:none; cursor:pointer; padding:12px 22px; border-radius:999px;
+    font-size:18px; font-weight:800; background:#fff; color:#9ca3af;
+    box-shadow:0 3px 10px rgba(0,0,0,.08); transition:transform .15s, box-shadow .15s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .tab .tab-star{ font-size:16px; }
+  .tab.active{ color:#fff; background:var(--blue); box-shadow:0 6px 18px rgba(59,130,246,.4); }
+  .tab.done{ color:#047857; background:#d1fae5; }
+  .tab.locked{ opacity:.55; cursor:not-allowed; }
+  .tab:not(.locked):hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.14); }
+
+  /* ===== 关卡主体 ===== */
+  .level{ display:none; gap:20px; align-items:stretch; }
+  .level.show{ display:grid; grid-template-columns:360px 1fr; }
+  @media (max-width:960px){ .level.show{ grid-template-columns:1fr; } }
+
+  .side{
+    background:#fff; border-radius:26px; padding:22px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+    display:flex; flex-direction:column; gap:16px; align-self:start;
+  }
+  .side h2{ margin:0; font-size:24px; line-height:1.3; }
+  .side .goal{ margin:0; font-size:16px; color:#374151; background:#fffbeb; border:2px dashed #fcd34d;
+    border-radius:14px; padding:12px 14px; }
+  .rule{ display:flex; flex-direction:column; gap:9px; }
+  .rule-item{
+    border-left:6px solid var(--c,#f59e0b); background:#f9fafb; border-radius:10px;
+    padding:9px 12px; font-size:15px; line-height:1.45;
+  }
+  .rule-item b{ display:block; color:var(--c,#f59e0b); font-size:15px; }
+  .hint{ margin:0; font-size:15px; color:#065f46; background:#d1fae5; border-radius:12px; padding:10px 12px; }
+
+  .btns{ display:flex; flex-wrap:wrap; gap:10px; }
+  .btns button{
+    border:none; cursor:pointer; font-size:16px; font-weight:800; padding:11px 16px; border-radius:14px;
+    background:var(--blue); color:#fff; box-shadow:0 4px 12px rgba(59,130,246,.35); transition:transform .12s;
+    font-family:inherit;
+  }
+  .btns button:hover{ transform:translateY(-2px); }
+  .btns button.ghost{ background:#f3f4f6; color:#374151; box-shadow:none; }
+  .btns button.warm{ background:var(--amber); box-shadow:0 4px 12px rgba(245,158,11,.35); }
+  .btns button.pink{ background:var(--pink); box-shadow:0 4px 12px rgba(236,72,153,.35); }
+
+  /* ===== 收集筐 ===== */
+  .basket{ background:#ecfdf5; border:3px solid #6ee7b7; border-radius:20px; padding:14px; }
+  .basket-head{ font-size:18px; font-weight:900; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .basket-head .count{ font-size:15px; background:#fff; border-radius:999px; padding:3px 12px; color:#047857; font-weight:800; }
+  .basket-bar{ height:12px; background:#d1fae5; border-radius:999px; overflow:hidden; margin-bottom:10px; }
+  .basket-bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#34d399,#10b981); border-radius:999px; transition:width .4s; }
+  .basket-list{ display:flex; flex-wrap:wrap; gap:7px; min-height:26px; }
+  .chip{
+    background:#fff; border:2px solid #34d399; border-radius:12px; padding:3px 9px;
+    font-size:15px; font-weight:800; color:#047857; animation:pop .35s;
+  }
+  @keyframes pop{ 0%{transform:scale(.3); opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1); opacity:1} }
+
+  /* ===== 树图面板 ===== */
+  .tree-panel{
+    position:relative; overflow:auto; background:#fff; border-radius:26px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08); min-height:560px;
+  }
+  .tree-panel .tree-svg{ display:block; }
+
+  /* 气球 */
+  .balloon{
+    position:absolute; pointer-events:none; transform:translate(-50%,-118%);
+    background:#fff; border:3px solid #fbbf24; border-radius:999px; padding:8px 16px;
+    font-size:22px; font-weight:900; color:#b45309; box-shadow:0 8px 20px rgba(0,0,0,.18);
+    opacity:0; transition:opacity .18s; white-space:nowrap; z-index:5;
+  }
+  .balloon::after{
+    content:""; position:absolute; left:50%; bottom:-12px; margin-left:-8px;
+    border:8px solid transparent; border-top-color:#fbbf24;
+  }
+  .balloon.show{ opacity:1; }
+  .balloon.bad{ border-color:var(--red); color:#b91c1c; }
+  .balloon.bad::after{ border-top-color:var(--red); }
+
+  /* ===== SVG 节点样式 ===== */
+  .edge{ fill:none; stroke-width:4; stroke-linecap:round; }
+  .edge.hl{ stroke:var(--red) !important; stroke-width:7; filter:drop-shadow(0 0 6px rgba(239,68,68,.7)); }
+  .edge-cut{ fill:none; stroke:#cbd5e1; stroke-width:4; stroke-dasharray:9 8; stroke-linecap:round; }
+
+  .node-root{ fill:#fef3c7; stroke:var(--amber); stroke-width:4; }
+  .node-circle{ fill:#fff; stroke-width:4; }
+  .node-circle.leaf{ stroke-width:4.5; }
+  .node-text{ font-weight:900; fill:#1f2937; }
+  .node-sub{ font-weight:700; fill:#6b7280; }
+
+  .g-node{ cursor:default; }
+  .g-node.leaf{ cursor:pointer; }
+  .g-node.pruned-node{ cursor:help; }
+  .g-node.hl .node-circle{ fill:#fee2e2; stroke:var(--red) !important; }
+  .g-node.hl .node-root{ fill:#fee2e2; stroke:var(--red) !important; }
+  .g-node.hl .node-elf{ fill:#fce7f3; stroke:var(--red) !important; }
+  .g-node.hl text{ fill:var(--red) !important; }
+
+  .g-node.got .node-circle{ stroke:#10b981 !important; fill:#ecfdf5; }
+  .g-node.got .leaf-check{ opacity:1; }
+
+  .g-node .node-circle.ghost{ fill:#f3f4f6; stroke:#d1d5db; stroke-dasharray:6 5; }
+  .g-node .node-circle.invalid{ fill:#f3f4f6; stroke:#d1d5db; stroke-dasharray:6 5; }
+  .g-node .invalid-txt{ fill:#9ca3af; }
+  .g-node.dupe .node-circle{ stroke:#c084fc !important; stroke-dasharray:5 4; }
+  .g-node.dupe .node-text{ fill:#9333ea; }
+
+  .node-elf{ fill:#fce7f3; stroke:var(--pink); stroke-width:4; }
+  .leaf-check{ opacity:0; font-size:16px; fill:#10b981; }
+
+  .dup-badge{ }
+  .step-tag text{ paint-order:stroke; stroke:#fff; stroke-width:5px; font-weight:900; }
+
+  .phantom-lock{ font-size:18px; }
+
+  /* ===== 飞行小球 ===== */
+  .fly-chip{
+    position:fixed; z-index:99; transform:translate(-50%,-50%);
+    background:#fff; border:2px solid #34d399; border-radius:12px; padding:4px 10px;
+    font-size:16px; font-weight:900; color:#047857; pointer-events:none;
+    box-shadow:0 6px 16px rgba(0,0,0,.2);
+  }
+
+  /* ===== 庆祝遮罩 ===== */
+  .overlay{
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:200;
+    background:rgba(0,0,0,.28);
+  }
+  .overlay.show{ display:flex; }
+  .overlay .card{
+    background:#fff; border-radius:28px; padding:34px 40px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.3); animation:bounceIn .5s;
+  }
+  .overlay .card h2{ margin:6px 0; font-size:34px; }
+  .overlay .card p{ font-size:20px; color:#374151; margin:8px 0 16px; }
+  .overlay .card button{
+    border:none; cursor:pointer; font-size:18px; font-weight:900; padding:12px 26px; border-radius:14px;
+    background:var(--green); color:#fff; font-family:inherit;
+  }
+  @keyframes bounceIn{ 0%{transform:scale(.5); opacity:0} 60%{transform:scale(1.08)} 100%{transform:scale(1); opacity:1} }
+
+  #fx{ position:fixed; inset:0; pointer-events:none; z-index:150; }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 树状图搭配</span>
+</div>
+<div class="wrap">
+
+  <header>
+    <h1><span class="tree">🌳</span> 树状图大冒险 <span class="tree">🌳</span></h1>
+    <p class="sub">一根树枝 = 一个选择 · 一条完整路径 = 一种结果 · 数一数有多少条路！</p>
+    <p class="unlock-all">家长/老师：<a id="unlockAll">🔓 解锁全部关卡</a></p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" id="tab-lv1" data-key="lv1"><span class="tab-star">⭐</span>关卡1</button>
+    <button class="tab locked" id="tab-lv2" data-key="lv2"><span class="tab-star">🔒</span>关卡2</button>
+    <button class="tab locked" id="tab-lv3" data-key="lv3"><span class="tab-star">🔒</span>关卡3</button>
+    <button class="tab locked" id="tab-lv4" data-key="lv4"><span class="tab-star">🔒</span>关卡4</button>
+  </nav>
+
+  <!-- ============ 关卡 1 ============ -->
+  <section class="level show" id="level-lv1">
+    <div class="side">
+      <h2>🎯 关卡1 · 1、2、3 组成三位数</h2>
+      <p class="goal">用 <b>1、2、3</b> 组成所有不同的三位数，每个数字只能用一次哦！</p>
+      <div class="rule">
+        <div class="rule-item" style="--c:#f59e0b"><b>第1步 · 百位</b> 可以选 1 / 2 / 3（长出 3 根树枝）</div>
+        <div class="rule-item" style="--c:#10b981"><b>第2步 · 十位</b> 用掉一个后，只剩 2 个可选</div>
+        <div class="rule-item" style="--c:#3b82f6"><b>第3步 · 个位</b> 只剩最后 1 个落脚点</div>
+      </div>
+      <p class="hint">💡 从「开始」顺着树枝走到最下面，这一条<b>完整路径</b>就是一个三位数。一共能走出 <b>6</b> 个！</p>
+      <div class="btns">
+        <button class="warm" id="btn-autoplay-lv1">▶️ 自动走一遍</button>
+        <button class="ghost" id="btn-clear-lv1">🧹 清空筐子</button>
+      </div>
+      <div class="basket">
+        <div class="basket-head">🧺 数字收集筐 <span class="count" id="count-lv1">0 / 6</span></div>
+        <div class="basket-bar"><i id="bar-lv1"></i></div>
+        <div class="basket-list" id="basket-list-lv1"></div>
+      </div>
+    </div>
+    <div class="tree-panel" id="tree-lv1"></div>
+  </section>
+
+  <!-- ============ 关卡 2 ============ -->
+  <section class="level" id="level-lv2">
+    <div class="side">
+      <h2>👯 关卡2 · 1、2、3、3 组成四位数</h2>
+      <p class="goal">这次有<b>两个一模一样的 3</b>！相同的数字不能长出两条一样的树枝。</p>
+      <div class="rule">
+        <div class="rule-item" style="--c:#f59e0b"><b>第1步 · 千位</b> 1 / 2 / 3（那个 3 其实藏了 2 个）</div>
+        <div class="rule-item" style="--c:#10b981"><b>第2步 · 百位</b> 剩下的数字里，相同的只画一条</div>
+        <div class="rule-item" style="--c:#8b5cf6"><b>×2 小徽章</b> = 这个房间藏着两个一模一样的 3 号球</div>
+      </div>
+      <p class="hint">💡 因为两个 3 一模一样，很多路会走到同一个数。合并后一共 <b>12</b> 个不同的数。</p>
+      <div class="btns">
+        <button class="pink" id="btn-merge-lv2">🔀 拆开重复树枝</button>
+        <button class="ghost" id="btn-clear-lv2">🧹 清空筐子</button>
+      </div>
+      <div class="basket">
+        <div class="basket-head">🧺 数字收集筐 <span class="count" id="count-lv2">0 / 12</span></div>
+        <div class="basket-bar"><i id="bar-lv2"></i></div>
+        <div class="basket-list" id="basket-list-lv2"></div>
+      </div>
+    </div>
+    <div class="tree-panel" id="tree-lv2"></div>
+  </section>
+
+  <!-- ============ 关卡 3 ============ -->
+  <section class="level" id="level-lv3">
+    <div class="side">
+      <h2>🔒 关卡3 · 1、2、3、0 组成四位数</h2>
+      <p class="goal"><b>0 不能当老大</b>（不能站在千位）！所以树的第一步就少长了一根树枝。</p>
+      <div class="rule">
+        <div class="rule-item" style="--c:#f59e0b"><b>第1步 · 千位</b> 只能 1 / 2 / 3，0 被 🔒 锁住啦</div>
+        <div class="rule-item" style="--c:#10b981"><b>第2步 · 百位</b> 从这里开始，0 解锁，能正常长出树枝</div>
+        <div class="rule-item" style="--c:#3b82f6"><b>🔑 记住</b> 最高位不能是 0，否则就不是四位数啦</div>
+      </div>
+      <p class="hint" id="hint-lv3">💡 锁住 0 后，一共能组成 <b>18</b> 个四位数。</p>
+      <div class="btns">
+        <button class="warm" id="btn-zero-lv3">🔓 如果 0 也能当老大？</button>
+        <button class="ghost" id="btn-clear-lv3">🧹 清空筐子</button>
+      </div>
+      <div class="basket">
+        <div class="basket-head">🧺 数字收集筐 <span class="count" id="count-lv3">0 / 18</span></div>
+        <div class="basket-bar"><i id="bar-lv3"></i></div>
+        <div class="basket-list" id="basket-list-lv3"></div>
+      </div>
+    </div>
+    <div class="tree-panel" id="tree-lv3"></div>
+  </section>
+
+  <!-- ============ 关卡 4 ============ -->
+  <section class="level" id="level-lv4">
+    <div class="side">
+      <h2>🧚 关卡4 · 1、2、3、4 组成四位数<br>（3 和 4 必须手拉手）</h2>
+      <p class="goal">规定：<b>3 和 4 必须贴在一起</b>！用「捆绑魔法」把它们变成连体精灵。</p>
+      <div class="rule">
+        <div class="rule-item" style="--c:#f59e0b"><b>普通视角 · 边建边剪</b> 走一步看一步，3 和 4 一旦被拆开，<b>当场剪掉</b>这条树枝 ✂️</div>
+        <div class="rule-item" style="--c:#ec4899"><b>捆绑魔法</b> 把 [3、4] 捆成一个大精灵，变成 3 个整体</div>
+        <div class="rule-item" style="--c:#8b5cf6"><b>精灵内部</b> 还能分成「3→4」和「4→3」两种站法</div>
+      </div>
+      <p class="hint">💡 剪掉走不通的树枝后，剩下的完整路径一共 <b>12</b> 个：3 和 4 永远是邻居。</p>
+      <div class="btns">
+        <button class="pink" id="btn-bundle-lv4">🧙 切换捆绑魔法视角</button>
+        <button class="ghost" id="btn-clear-lv4">🧹 清空筐子</button>
+      </div>
+      <div class="basket">
+        <div class="basket-head">🧺 数字收集筐 <span class="count" id="count-lv4">0 / 12</span></div>
+        <div class="basket-bar"><i id="bar-lv4"></i></div>
+        <div class="basket-list" id="basket-list-lv4"></div>
+      </div>
+    </div>
+    <div class="tree-panel" id="tree-lv4"></div>
+  </section>
+
+</div>
+
+<canvas id="fx"></canvas>
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div style="font-size:60px">🎉</div>
+    <h2 id="ov-title">通关啦！</h2>
+    <p id="ov-text">你收集齐了所有数字！</p>
+    <button id="ov-btn">继续闯关 →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= 通用小工具 ================= */
+  function svgEl(tag, attrs){
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs){ e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+  function svgText(str, x, y, size, fill){
+    var t = svgEl("text", {x:x, y:y, "font-size":size, "text-anchor":"middle", "dominant-baseline":"central", "class":"node-text"});
+    if (fill){ t.setAttribute("fill", fill); }
+    t.textContent = str;
+    return t;
+  }
+  function edgePath(px, py, cx, cy){
+    var my = (py + cy) / 2;
+    return "M " + px + " " + py + " C " + px + " " + my + " " + cx + " " + my + " " + cx + " " + cy;
+  }
+
+  var LEVEL_COLORS = ["#cbd5e1", "#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#8b5cf6"];
+  var CIRC = ["①","②","③","④","⑤","⑥"];
+  var TOP_PAD = 46;
+  var LEVEL_GAP = 112;
+  var LEFT_MARGIN = 92;
+
+  var nodeSeq = 0;
+  function Tn(label, opts){
+    opts = opts || {};
+    return {
+      id: ++nodeSeq,
+      label: label,
+      dup: opts.dup || 0,
+      special: opts.special || null,       // 'start' | 'elf'
+      children: [],
+      parent: null,
+      stepLevel: opts.stepLevel || 0,
+      x: 0, y: 0,
+      _leaf: !!opts._leaf,
+      valid: true,
+      pruned: false,
+      duplicate: false,
+      resultNumbers: []
+    };
+  }
+  function nodeRadius(n){
+    if (n.special === "start") return 24;
+    if (n.special === "elf") return 26;
+    return n._leaf ? 21 : 19;
+  }
+
+  /* ================= 树构造 ================= */
+  function collectLeaves(node, list){
+    if (node._leaf){ list.push(node); return; }
+    node.children.forEach(function(c){ collectLeaves(c, list); });
+  }
+  // 收集所有"末端"节点（叶子 + 被剪掉的死路），用于布局占位
+  function collectTerminals(node, list){
+    if (node.children.length === 0){ list.push(node); return; }
+    node.children.forEach(function(c){ collectTerminals(c, list); });
+  }
+  function removeOne(arr, v){
+    var out = arr.slice(); var i = out.indexOf(v); if (i >= 0) out.splice(i, 1); return out;
+  }
+
+  // 全排列（无重复，区分顺序）
+  function attachAll(parent, tokens, startStep, prefix){
+    if (tokens.length === 0){
+      parent._leaf = true;
+      parent.resultNumbers = [prefix.join("")];
+      return;
+    }
+    tokens.forEach(function(d, i){
+      var child = Tn(d, {stepLevel: startStep});
+      var rest = tokens.slice(0, i).concat(tokens.slice(i + 1));
+      child.parent = parent; parent.children.push(child);
+      attachAll(child, rest, startStep + 1, prefix.concat([d]));
+    });
+  }
+
+  // 去重（相同数字只画一条树枝 + ×2 徽章）
+  function attachDistinct(parent, bag, startStep, prefix){
+    if (bag.length === 0){
+      parent._leaf = true;
+      parent.resultNumbers = [prefix.join("")];
+      return;
+    }
+    var seen = {};
+    bag.forEach(function(d){
+      if (seen[d]) return; seen[d] = true;
+      var cnt = bag.filter(function(x){ return x === d; }).length;
+      var child = Tn(d, {stepLevel: startStep, dup: cnt > 1 ? cnt : 0});
+      child.parent = parent; parent.children.push(child);
+      attachDistinct(child, removeOne(bag, d), startStep + 1, prefix.concat([d]));
+    });
+  }
+
+  /* ---- 关卡1：1,2,3 三位数 ---- */
+  function buildLevel1(){
+    var root = Tn("开始", {special: "start", stepLevel: 0});
+    ["1","2","3"].forEach(function(d){
+      var n1 = Tn(d, {stepLevel: 1});
+      var rest1 = ["1","2","3"].filter(function(x){ return x !== d; });
+      rest1.forEach(function(t){
+        var n2 = Tn(t, {stepLevel: 2});
+        var last = rest1.filter(function(x){ return x !== t; })[0];
+        var n3 = Tn(last, {stepLevel: 3, _leaf: true});
+        n3.resultNumbers = [d + t + last];
+        n2.children.push(n3); n3.parent = n2;
+        n1.children.push(n2); n2.parent = n1;
+      });
+      root.children.push(n1); n1.parent = root;
+    });
+    return { root: root, stepNames: ["百位","十位","个位"], leafStep: 92, phantomZero: false };
+  }
+
+  /* ---- 关卡2：1,2,3,3 四位数（重复） ---- */
+  function buildLevel2(expanded){
+    var root = Tn("开始", {special: "start", stepLevel: 0});
+    if (expanded){
+      attachAll(root, ["1","2","3","3"], 1, []);
+      var leaves = []; collectLeaves(root, leaves);
+      var seen = {};
+      leaves.forEach(function(lf){
+        var s = lf.resultNumbers[0];
+        if (seen[s]){ lf.duplicate = true; } else { seen[s] = true; }
+      });
+      return { root: root, stepNames: ["千位","百位","十位","个位"], leafStep: 46, phantomZero: false };
+    }
+    attachDistinct(root, ["1","2","3","3"], 1, []);
+    return { root: root, stepNames: ["千位","百位","十位","个位"], leafStep: 64, phantomZero: false };
+  }
+
+  /* ---- 关卡3：1,2,3,0 四位数（0 不能做首位） ---- */
+  function buildLevel3(allowZeroLead){
+    var root = Tn("开始", {special: "start", stepLevel: 0});
+    var first = allowZeroLead ? ["0","1","2","3"] : ["1","2","3"];
+    first.forEach(function(d){
+      var n1 = Tn(d, {stepLevel: 1});
+      n1.parent = root; root.children.push(n1);
+      attachAll(n1, removeOne(["0","1","2","3"], d), 2, [d]);
+    });
+    var step = allowZeroLead ? 46 : 58;
+    return {
+      root: root,
+      stepNames: ["千位","百位","十位","个位"],
+      leafStep: step,
+      phantomZero: !allowZeroLead,
+      target: allowZeroLead ? 24 : 18
+    };
+  }
+
+  /* ---- 关卡4：1,2,3,4 四位数（3、4 相邻） ---- */
+  // 判断当前前缀还有没有可能让 3 和 4 相邻
+  function canComplete(prefix){
+    var i3 = prefix.indexOf("3");
+    var i4 = prefix.indexOf("4");
+    var k = prefix.length;
+    if (i3 !== -1 && i4 !== -1){
+      return Math.abs(i3 - i4) === 1;      // 两个都已经就位：必须紧挨着
+    }
+    if (i3 !== -1){ return i3 + 1 === k; }  // 只有3就位：4必须放在它紧右边（下一个空位）
+    if (i4 !== -1){ return i4 + 1 === k; }  // 只有4就位：3必须放在它紧右边
+    return true;                            // 都还没出现：以后还能挨着
+  }
+  // 边建树边剪枝：一旦发现 3、4 不可能相邻，立刻在此处剪断，不再往下长
+  function attachPruned(parent, prefix, step){
+    var full = ["1","2","3","4"];
+    var remaining = full.filter(function(d){ return prefix.indexOf(d) === -1; });
+    remaining.forEach(function(d){
+      var newPrefix = prefix.concat([d]);
+      var ok = canComplete(newPrefix);
+      var isLast = remaining.length === 1;
+      var child = Tn(d, {stepLevel: step});
+      child.parent = parent; parent.children.push(child);
+      if (!ok){
+        child.pruned = true;      // 剪枝：这条路到此为止
+        child.valid = false;
+        return;
+      }
+      if (isLast){
+        child._leaf = true;
+        child.resultNumbers = [newPrefix.join("")];
+      } else {
+        attachPruned(child, newPrefix, step + 1);
+      }
+    });
+  }
+  function buildLevel4Normal(){
+    var root = Tn("开始", {special: "start", stepLevel: 0});
+    attachPruned(root, [], 1);
+    return { root: root, stepNames: ["千位","百位","十位","个位"], leafStep: 46, phantomZero: false };
+  }
+  function buildLevel4Bundled(){
+    var root = Tn("开始", {special: "start", stepLevel: 0});
+    attachUnitPerms(root, ["1","2","ELF"], 1, []);
+    return { root: root, stepNames: ["第1位","第2位","第3位"], leafStep: 104, phantomZero: false };
+  }
+  function attachUnitPerms(parent, units, step, prefix){
+    if (units.length === 0){
+      parent._leaf = true;
+      if (prefix.indexOf("ELF") >= 0){
+        parent.resultNumbers = [
+          prefix.map(function(u){ return u === "ELF" ? "34" : u; }).join(""),
+          prefix.map(function(u){ return u === "ELF" ? "43" : u; }).join("")
+        ];
+        parent.isElfLeaf = true;
+      } else {
+        parent.resultNumbers = [prefix.join("")];
+      }
+      return;
+    }
+    units.forEach(function(u, i){
+      var child = Tn(u, {stepLevel: step, special: u === "ELF" ? "elf" : null});
+      child.parent = parent; parent.children.push(child);
+      attachUnitPerms(child, units.slice(0, i).concat(units.slice(i + 1)), step + 1, prefix.concat([u]));
+    });
+  }
+
+  /* ================= 布局 ================= */
+  function layout(root, leafStep){
+    var terms = []; collectTerminals(root, terms);
+    terms.forEach(function(t, i){
+      t.x = LEFT_MARGIN + leafStep * (i + 1);
+      t.y = TOP_PAD + t.stepLevel * LEVEL_GAP;
+    });
+    assignInternal(root);
+  }
+  function assignInternal(node){
+    if (node.children.length === 0) return;
+    node.children.forEach(assignInternal);
+    node.x = (node.children[0].x + node.children[node.children.length - 1].x) / 2;
+    node.y = TOP_PAD + node.stepLevel * LEVEL_GAP;
+  }
+
+  /* ================= 渲染 ================= */
+  function renderLevel(key, cfg){
+    var panel = document.getElementById("tree-" + key);
+    panel.innerHTML = "";
+
+    var root = cfg.root;
+    var leaves = []; collectLeaves(root, leaves);
+    var terms = []; collectTerminals(root, terms);
+    var maxStep = 0;
+    terms.forEach(function(t){ if (t.stepLevel > maxStep) maxStep = t.stepLevel; });
+
+    layout(root, cfg.leafStep);
+    var W = LEFT_MARGIN + (terms.length + 1) * cfg.leafStep + 80;
+    var H = TOP_PAD + maxStep * LEVEL_GAP + 84;
+
+    var svg = svgEl("svg", {width: W, height: H, class: "tree-svg"});
+
+    drawStepTags(svg, cfg.stepNames);
+    drawEdges(svg, root);
+    if (cfg.phantomZero) drawPhantom(svg, root, cfg.leafStep);
+    drawNodes(svg, root);
+
+    panel.appendChild(svg);
+
+    var balloon = document.createElement("div");
+    balloon.className = "balloon";
+    panel.appendChild(balloon);
+
+    leaves.forEach(function(lf){ attachLeaf(key, lf); });
+    terms.forEach(function(t){ if (t.pruned) attachCut(key, t); });
+    markCollected(key);
+  }
+
+  function drawStepTags(svg, names){
+    names.forEach(function(name, i){
+      var L = i + 1;
+      var y = TOP_PAD + L * LEVEL_GAP - 16;
+      var t = svgText(CIRC[L - 1] + " " + name, 14, y, 16, LEVEL_COLORS[L]);
+      t.classList.add("step-tag");
+      t.classList.remove("node-text");
+      t.setAttribute("paint-order", "stroke");
+      t.setAttribute("stroke", "#ffffff");
+      t.setAttribute("stroke-width", "5px");
+      t.setAttribute("style", "font-weight:900;");
+      svg.appendChild(t);
+    });
+  }
+
+  function drawEdges(svg, node){
+    node.children.forEach(function(ch){
+      var px = node.x, py = node.y + nodeRadius(node);
+      var cx = ch.x, cy = ch.y - nodeRadius(ch);
+      var p = svgEl("path", {
+        d: edgePath(px, py, cx, cy),
+        class: "edge edge-l" + ch.stepLevel,
+        stroke: LEVEL_COLORS[ch.stepLevel]
+      });
+      svg.appendChild(p);
+      ch._edge = p;
+      drawEdges(svg, ch);
+    });
+  }
+
+  function drawPhantom(svg, root, leafStep){
+    var y = TOP_PAD + 1 * LEVEL_GAP;
+    var px = LEFT_MARGIN + leafStep * 0.55;
+    // 被剪掉的虚线树枝
+    var cut = svgEl("path", {
+      d: edgePath(root.x, root.y + 24, px, y - 19),
+      class: "edge-cut"
+    });
+    svg.appendChild(cut);
+    var midX = (root.x + px) / 2, midY = (root.y + 24 + y - 19) / 2;
+    svg.appendChild(svgText("✂️", midX, midY, 20, "#ef4444"));
+
+    var g = svgEl("g", {class: "g-node phantom"});
+    g.setAttribute("transform", "translate(" + px + " " + y + ")");
+    g.appendChild(svgEl("circle", {cx: 0, cy: 0, r: 21, class: "node-circle ghost"}));
+    var t = svgText("0", 0, 0, 17, "#9ca3af");
+    g.appendChild(t);
+    // 红色小锁
+    var lock = svgText("🔒", 0, -34, 22, "#ef4444");
+    g.appendChild(lock);
+    var no = svgText("禁止当老大", 0, 36, 13, "#ef4444");
+    no.setAttribute("class", "node-sub");
+    no.setAttribute("style", "font-weight:800;");
+    g.appendChild(no);
+    svg.appendChild(g);
+  }
+
+  function drawNodes(svg, node){
+    var g = svgEl("g", {class: "g-node"});
+    g.setAttribute("transform", "translate(" + node.x + " " + node.y + ")");
+
+    if (node.special === "start"){
+      g.appendChild(svgEl("rect", {x: -46, y: -24, width: 92, height: 48, rx: 24, ry: 24, class: "node-root"}));
+      g.appendChild(svgText("🚩 开始", 0, 0, 17, "#92400e"));
+    }
+    else if (node.special === "elf"){
+      var pw = 50, ph = 25;
+      g.appendChild(svgEl("rect", {x: -pw, y: -ph, width: pw * 2, height: ph * 2, rx: ph, ry: ph, class: "node-elf"}));
+      g.appendChild(svgText("34 ⇄ 43", 0, 0, 15, "#be185d"));
+      // ×2 徽章
+      g.appendChild(dupBadge(2, pw - 2, -ph - 2));
+      g.appendChild(svgText("🧚", -pw + 2, -ph - 2, 14, "#db2777"));
+      g.appendChild(svgText("连体精灵", 0, ph + 16, 12, "#db2777"));
+    }
+    else {
+      var cls = "node-circle";
+      if (node._leaf) cls += " leaf";
+      if (node.pruned) cls += " invalid";
+      var c = svgEl("circle", {
+        cx: 0, cy: 0, r: nodeRadius(node),
+        class: cls,
+        stroke: node.pruned ? "#d1d5db" : LEVEL_COLORS[node.stepLevel]
+      });
+      g.appendChild(c);
+
+      var txtFill = node.pruned ? "#9ca3af" : "#1f2937";
+      g.appendChild(svgText(node.label, 0, 0, node._leaf ? 17 : 16, txtFill));
+
+      if (node._leaf){
+        var chk = svgText("✓", nodeRadius(node) - 2, -nodeRadius(node) + 1, 18, "#10b981");
+        chk.classList.add("leaf-check");
+        chk.classList.remove("node-text");
+        g.appendChild(chk);
+        if (node.duplicate){
+          g.appendChild(svgText("🔄", -nodeRadius(node) + 3, -nodeRadius(node) - 1, 14, "#a855f7"));
+        }
+      }
+      if (node.pruned){
+        // 剪枝标记：✂️ 在上，红虚线小断枝向下，说明"在这里被剪断，长不下去了"
+        g.appendChild(svgText("✂️", 0, -nodeRadius(node) - 9, 20, "#ef4444"));
+        var stub = svgEl("path", {
+          d: "M 0 " + nodeRadius(node) + " L 0 " + (nodeRadius(node) + 24),
+          class: "edge-cut",
+          stroke: "#f87171"
+        });
+        g.appendChild(stub);
+        var lab = svgText("走不通", 0, nodeRadius(node) + 36, 12, "#ef4444");
+        lab.setAttribute("class", "node-sub");
+        lab.setAttribute("style", "font-weight:800;");
+        g.appendChild(lab);
+      }
+      if (node.dup >= 2){
+        g.appendChild(dupBadge(node.dup, nodeRadius(node) + 3, -nodeRadius(node)));
+      }
+    }
+
+    svg.appendChild(g);
+    node._g = g;
+
+    if (node._leaf){
+      g.classList.add("leaf");
+      g.setAttribute("data-leaf", "1");
+      if (node.duplicate) g.classList.add("dupe");
+    }
+    if (node.pruned) g.classList.add("pruned-node");
+    node.children.forEach(function(ch){ drawNodes(svg, ch); });
+  }
+
+  function dupBadge(n, dx, dy){
+    var g = svgEl("g", {class: "dup-badge"});
+    g.appendChild(svgEl("circle", {cx: dx, cy: dy, r: 11, fill: "#fb923c"}));
+    var t = svgText("×" + n, dx, dy, 12, "#ffffff");
+    g.appendChild(t);
+    return g;
+  }
+
+  /* ================= 交互 ================= */
+  function attachLeaf(key, leaf){
+    var g = leaf._g;
+    g.addEventListener("mouseenter", function(){
+      highlightPath(leaf, true);
+      showBalloon(key, leaf);
+      collect(key, leaf);
+    });
+    g.addEventListener("mouseleave", function(){
+      highlightPath(leaf, false);
+      hideBalloon(key);
+    });
+    g.addEventListener("click", function(){
+      if (leaf.valid !== false) collect(key, leaf, true);
+    });
+  }
+  // 剪枝节点：悬停只提示"走不通"，不入筐
+  function attachCut(key, node){
+    var g = node._g;
+    g.addEventListener("mouseenter", function(){
+      highlightPath(node, true);
+      showBalloon(key, node);
+    });
+    g.addEventListener("mouseleave", function(){
+      highlightPath(node, false);
+      hideBalloon(key);
+    });
+  }
+
+  function highlightPath(leaf, on){
+    var n = leaf;
+    while (n){
+      if (n._g) n._g.classList.toggle("hl", on);
+      if (n._edge) n._edge.classList.toggle("hl", on);
+      n = n.parent;
+    }
+  }
+
+  function showBalloon(key, node){
+    var panel = document.getElementById("tree-" + key);
+    var b = panel.querySelector(".balloon");
+    if (!b) return;
+    var txt, bad = false;
+    if (node.pruned){
+      txt = "✂️ 3 和 4 分开了，这条路走不通，剪掉！";
+      bad = true;
+    } else {
+      txt = "🎈 " + node.resultNumbers.join(" 或 ");
+      if (node.duplicate) txt += " 🔄";
+      if (node.isElfLeaf) txt += " ✨";
+    }
+    b.textContent = txt;
+    b.classList.toggle("bad", bad);
+    b.style.left = node.x + "px";
+    b.style.top = (node.y + 2) + "px";
+    b.classList.add("show");
+  }
+  function hideBalloon(key){
+    var panel = document.getElementById("tree-" + key);
+    var b = panel.querySelector(".balloon");
+    if (b) b.classList.remove("show");
+  }
+
+  /* ================= 收集筐 ================= */
+  var state = {};
+  var LEVEL_ORDER = ["lv1","lv2","lv3","lv4"];
+  LEVEL_ORDER.forEach(function(k){
+    state[k] = { collected: new Set(), root: null, target: 0, built: false, done: false, expanded: false, allowZero: false, bundled: false };
+  });
+
+  function distinctTarget(root){
+    var leaves = []; collectLeaves(root, leaves);
+    var s = new Set();
+    leaves.forEach(function(lf){
+      if (lf.valid !== false) lf.resultNumbers.forEach(function(n){ s.add(n); });
+    });
+    return s.size;
+  }
+
+  function collect(key, leaf, isClick){
+    if (leaf.valid === false) return;   // 3和4没相邻 → 不算，不许掉进筐
+    var added = false;
+    leaf.resultNumbers.forEach(function(n){
+      if (!state[key].collected.has(n)){
+        state[key].collected.add(n);
+        added = true;
+        flyChip(key, leaf, n);
+        addChip(key, n);
+      }
+    });
+    if (added){
+      updateCount(key);
+      var allGot = leaf.resultNumbers.every(function(n){ return state[key].collected.has(n); });
+      if (allGot && leaf.valid !== false && leaf._g) leaf._g.classList.add("got");
+    }
+    if (state[key].collected.size >= state[key].target){
+      completeLevel(key);
+    }
+  }
+
+  function flyChip(key, leaf, num){
+    var src = leaf._g.querySelector("circle");
+    if (!src) return;
+    var r = src.getBoundingClientRect();
+    var list = document.getElementById("basket-list-" + key);
+    var bl = list.getBoundingClientRect();
+    var chip = document.createElement("div");
+    chip.className = "fly-chip";
+    chip.textContent = num;
+    chip.style.left = (r.left + r.width / 2) + "px";
+    chip.style.top = (r.top + r.height / 2) + "px";
+    document.body.appendChild(chip);
+    var dx = (bl.left + 24) - (r.left + r.width / 2);
+    var dy = (bl.top + 12) - (r.top + r.height / 2);
+    var anim = chip.animate([
+      { transform: "translate(0,0) scale(1)", opacity: 1 },
+      { transform: "translate(" + dx + "px," + dy + "px) scale(.45)", opacity: .9 }
+    ], { duration: 620, easing: "cubic-bezier(.4,0,.2,1)" });
+    anim.onfinish = function(){ chip.remove(); };
+  }
+
+  function addChip(key, n){
+    var list = document.getElementById("basket-list-" + key);
+    var sorted = Array.from(state[key].collected).sort(function(a, b){
+      return parseInt(a, 10) - parseInt(b, 10);
+    });
+    list.innerHTML = "";
+    sorted.forEach(function(v){
+      var c = document.createElement("span");
+      c.className = "chip";
+      c.textContent = v;
+      list.appendChild(c);
+    });
+  }
+  function updateCount(key){
+    var done = state[key].collected.size;
+    var t = state[key].target;
+    var cnt = document.getElementById("count-" + key);
+    cnt.textContent = done + " / " + t;
+    var bar = document.getElementById("bar-" + key);
+    bar.style.width = Math.min(100, (done / t) * 100) + "%";
+  }
+  function markCollected(key){
+    var root = state[key].root;
+    if (!root) return;
+    var leaves = []; collectLeaves(root, leaves);
+    leaves.forEach(function(lf){
+      var all = lf.resultNumbers.length > 0 && lf.resultNumbers.every(function(n){ return state[key].collected.has(n); });
+      if (all && lf.valid !== false && lf._g) lf._g.classList.add("got");
+    });
+  }
+
+  function renderBasket(key){
+    addChip(key, key);
+    updateCount(key);
+  }
+
+  function completeLevel(key){
+    if (state[key].done) return;
+    state[key].done = true;
+    var tab = document.getElementById("tab-" + key);
+    tab.classList.add("done");
+    var star = tab.querySelector(".tab-star");
+    if (star) star.textContent = "⭐";
+    var idx = LEVEL_ORDER.indexOf(key);
+    if (idx + 1 < LEVEL_ORDER.length) unlockLevel(LEVEL_ORDER[idx + 1]);
+    showCelebration(key);
+    launchFireworks();
+  }
+
+  function unlockLevel(key){
+    var tab = document.getElementById("tab-" + key);
+    tab.classList.remove("locked");
+    var star = tab.querySelector(".tab-star");
+    if (star && star.textContent === "🔒") star.textContent = "⭐";
+  }
+
+  function showCelebration(key){
+    var titles = {
+      lv1: "通关啦！6 个三位数集齐 🎉",
+      lv2: "通关啦！12 个四位数集齐 🎉",
+      lv3: "通关啦！数字全找齐 🎉",
+      lv4: "终极通关！12 个精灵数集齐 🏆"
+    };
+    document.getElementById("ov-title").textContent = titles[key] || "通关啦！";
+    document.getElementById("ov-text").textContent = "你顺着树枝走完了每一条路，太棒了！";
+    document.getElementById("overlay").classList.add("show");
+  }
+
+  /* ================= 关卡切换 ================= */
+  function buildAndRender(key, keepCollected){
+    var root, cfg;
+    if (key === "lv1") cfg = buildLevel1();
+    else if (key === "lv2") cfg = buildLevel2(state[key].expanded);
+    else if (key === "lv3") cfg = buildLevel3(state[key].allowZero);
+    else if (key === "lv4") cfg = state[key].bundled ? buildLevel4Bundled() : buildLevel4Normal();
+
+    if (!keepCollected) state[key].collected = new Set();
+    state[key].root = cfg.root;
+    state[key].target = cfg.target || distinctTarget(cfg.root);
+    state[key].built = true;
+    renderLevel(key, cfg);
+    renderBasket(key);
+
+    // 更新关卡3提示文案
+    if (key === "lv3"){
+      var hint = document.getElementById("hint-lv3");
+      if (state[key].allowZero){
+        hint.innerHTML = "💡 解锁 0 后，一共能组成 <b>24</b> 个四位数！";
+      } else {
+        hint.innerHTML = "💡 锁住 0 后，一共能组成 <b>18</b> 个四位数。";
+      }
+    }
+  }
+
+  function showLevel(key){
+    LEVEL_ORDER.forEach(function(k){
+      document.getElementById("level-" + k).classList.remove("show");
+      document.getElementById("tab-" + k).classList.remove("active");
+    });
+    document.getElementById("level-" + key).classList.add("show");
+    document.getElementById("tab-" + key).classList.add("active");
+    if (!state[key].built) buildAndRender(key);
+  }
+
+  /* ================= 关卡内按钮 ================= */
+  function clearBasket(key){
+    state[key].collected = new Set();
+    renderBasket(key);
+    // 去掉所有 got 标记
+    var root = state[key].root;
+    if (!root) return;
+    var leaves = []; collectLeaves(root, leaves);
+    leaves.forEach(function(lf){ if (lf._g) lf._g.classList.remove("got"); });
+  }
+
+  function autoPlay(key){
+    var root = state[key].root;
+    if (!root) return;
+    var leaves = []; collectLeaves(root, leaves);
+    var i = 0;
+    function step(){
+      if (i >= leaves.length) return;
+      var lf = leaves[i];
+      highlightPath(lf, true);
+      showBalloon(key, lf);
+      collect(key, lf);
+      setTimeout(function(){
+        highlightPath(lf, false);
+        hideBalloon(key);
+        i++;
+        step();
+      }, 620);
+    }
+    step();
+  }
+
+  /* ================= 烟花 ================= */
+  function launchFireworks(){
+    var cv = document.getElementById("fx");
+    cv.width = window.innerWidth;
+    cv.height = window.innerHeight;
+    cv.style.display = "block";
+    var ctx = cv.getContext("2d");
+    var parts = [];
+    var rockets = [];
+    var PALETTE = ["#f59e0b","#10b981","#3b82f6","#ec4899","#8b5cf6","#ef4444","#fbbf24"];
+    function rand(a, b){ return a + Math.random() * (b - a); }
+    function spawnRocket(){
+      rockets.push({
+        x: rand(cv.width * .15, cv.width * .85), y: cv.height,
+        tx: rand(cv.width * .2, cv.width * .8), ty: rand(cv.height * .18, cv.height * .5),
+        life: rand(42, 62)
+      });
+    }
+    function explode(x, y){
+      var n = 46;
+      for (var i = 0; i < n; i++){
+        var ang = (Math.PI * 2 * i) / n + rand(-.1, .1);
+        var sp = rand(2, 6.5);
+        parts.push({ x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: rand(40, 70), color: PALETTE[i % PALETTE.length] });
+      }
+    }
+    var start = Date.now();
+    var nextRocket = 0;
+    function tick(){
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      var now = Date.now();
+      if (now > nextRocket){
+        spawnRocket(); nextRocket = now + rand(280, 520);
+      }
+      rockets = rockets.filter(function(r){ return r.life > 0; });
+      rockets.forEach(function(r){
+        r.life--;
+        r.y += (r.ty - r.y) * .07;
+        r.x += (r.tx - r.x) * .07;
+        if (r.life <= 8){ explode(r.x, r.y); r.life = 0; }
+        else {
+          ctx.fillStyle = "#fff";
+          ctx.beginPath(); ctx.arc(r.x, r.y, 3, 0, Math.PI * 2); ctx.fill();
+        }
+      });
+      parts = parts.filter(function(p){ return p.life > 0; });
+      parts.forEach(function(p){
+        p.life--; p.x += p.vx; p.y += p.vy; p.vy += .06; p.vx *= .985; p.vy *= .985;
+        ctx.globalAlpha = Math.max(0, p.life / 60);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (Date.now() - start < 3800){
+        requestAnimationFrame(tick);
+      } else {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        cv.style.display = "none";
+      }
+    }
+    tick();
+  }
+
+  /* ================= 初始化 ================= */
+  function init(){
+    var tabs = document.querySelectorAll(".tab");
+    tabs.forEach(function(t){
+      t.addEventListener("click", function(){
+        var key = t.getAttribute("data-key");
+        if (t.classList.contains("locked")) return;
+        showLevel(key);
+      });
+    });
+    document.getElementById("unlockAll").addEventListener("click", function(){
+      LEVEL_ORDER.forEach(unlockLevel);
+    });
+    document.getElementById("ov-btn").addEventListener("click", function(){
+      document.getElementById("overlay").classList.remove("show");
+    });
+
+    document.getElementById("btn-autoplay-lv1").addEventListener("click", function(){ autoPlay("lv1"); });
+    document.getElementById("btn-clear-lv1").addEventListener("click", function(){ clearBasket("lv1"); });
+    document.getElementById("btn-clear-lv2").addEventListener("click", function(){ clearBasket("lv2"); });
+    document.getElementById("btn-clear-lv3").addEventListener("click", function(){ clearBasket("lv3"); });
+    document.getElementById("btn-clear-lv4").addEventListener("click", function(){ clearBasket("lv4"); });
+
+    document.getElementById("btn-merge-lv2").addEventListener("click", function(){
+      var s = state.lv2;
+      s.expanded = !s.expanded;
+      this.textContent = s.expanded ? "🧲 合并重复树枝" : "🔀 拆开重复树枝";
+      buildAndRender("lv2", true);
+    });
+
+    document.getElementById("btn-zero-lv3").addEventListener("click", function(){
+      var s = state.lv3;
+      s.allowZero = !s.allowZero;
+      this.textContent = s.allowZero ? "🔒 把 0 重新锁住" : "🔓 如果 0 也能当老大？";
+      buildAndRender("lv3", true);
+    });
+
+    document.getElementById("btn-bundle-lv4").addEventListener("click", function(){
+      var s = state.lv4;
+      s.bundled = !s.bundled;
+      this.textContent = s.bundled ? "👀 切回普通视角" : "🧙 切换捆绑魔法视角";
+      buildAndRender("lv4", true);
+    });
+
+    buildAndRender("lv1");
+
+    var DEBUG = /[?&]test=all/.test(location.search);
+    if (DEBUG){
+      LEVEL_ORDER.forEach(function(k){ buildAndRender(k); });
+      showLevel("lv1");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>

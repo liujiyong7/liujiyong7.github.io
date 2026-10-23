@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数线段 · 趣味小课堂</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --sub: #64748b;
+    --accent: #2563eb;
+    --accent2: #7c3aed;
+    --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", system-ui, sans-serif;
+    color: var(--ink);
+    padding: 20px 12px 60px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(120deg, #2563eb, #7c3aed);
+    color: #fff;
+    border-radius: 20px;
+    padding: 26px 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, .25);
+  }
+  header h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: 2px; }
+  header p { margin: 0; font-size: 15px; opacity: .95; }
+
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px 18px 20px;
+    margin-top: 18px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+    border: 1px solid var(--line);
+  }
+
+  .label { font-weight: 700; margin-bottom: 10px; color: var(--sub); }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pt-btn {
+    min-width: 56px; height: 56px;
+    border-radius: 14px;
+    border: 2px solid var(--line);
+    background: #fff;
+    font-size: 22px; font-weight: 800;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all .15s;
+  }
+  .pt-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pt-btn.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .35);
+  }
+
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab {
+    flex: 1; min-width: 120px;
+    padding: 11px 8px;
+    border-radius: 12px;
+    border: 2px solid var(--line);
+    background: #f8fafc;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    color: var(--sub);
+    transition: all .15s;
+  }
+  .tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  .figure-box {
+    background: linear-gradient(180deg, #f8fbff, #eef4ff);
+    border-radius: 16px;
+    border: 1px solid #dbe7ff;
+    overflow: hidden;
+  }
+  .figure-box svg { display: block; width: 100%; height: auto; }
+  .figure-box.small svg { max-width: 520px; margin: 0 auto; }
+
+  .arc { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw .45s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .hint { color: var(--sub); font-size: 14px; margin-top: 10px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #f1f5f9; border-radius: 999px;
+    padding: 7px 14px; font-size: 14px; font-weight: 700;
+    border: 2px solid transparent; cursor: pointer;
+    font-family: inherit; color: var(--ink);
+    transition: opacity .2s, transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .chip:hover { transform: translateY(-2px); }
+  .chip.focused { border-color: #334155; background: #fff; box-shadow: 0 4px 12px rgba(15,23,42,.18); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+  .expr {
+    margin-top: 14px;
+    font-size: 24px; font-weight: 800; text-align: center;
+    color: var(--accent);
+  }
+  .explain {
+    margin-top: 8px; text-align: center;
+    font-size: 16px; color: var(--sub); min-height: 26px;
+  }
+  .explain b { color: var(--ink); }
+
+  .step-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+  .step-btns button {
+    padding: 12px 18px; border-radius: 12px;
+    border: none; font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: all .15s;
+  }
+  #btn-next { background: var(--accent); color: #fff; }
+  #btn-prev { background: #eef2ff; color: var(--accent); }
+  #btn-all { background: #10b981; color: #fff; }
+  #btn-reset { background: #f1f5f9; color: #475569; }
+  .step-btns button:hover { transform: translateY(-2px); }
+  .step-btns button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .formula-card { text-align: center; padding: 10px 4px; }
+  .formula-big {
+    font-size: 30px; font-weight: 800; color: var(--accent2);
+    margin: 12px 0;
+  }
+  .formula-ex { font-size: 18px; color: var(--ink); margin: 8px 0; }
+  .formula-why { color: var(--sub); font-size: 15px; line-height: 1.7; text-align: left; }
+  .pill {
+    display: inline-block; background: #fef3c7; color: #92400e;
+    border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 15px;
+    margin: 4px 2px;
+  }
+
+  .sec-title { margin: 0 0 4px; font-size: 22px; }
+  .sec-sub { margin: 0 0 4px; color: var(--sub); font-size: 15px; }
+  .ext-block { margin-top: 22px; }
+  .ext-head {
+    font-weight: 800; font-size: 18px; margin-bottom: 10px;
+    padding-left: 12px; border-left: 5px solid var(--accent2);
+  }
+  .ext-block .label { margin-top: 2px; }
+
+  .quiz h2 { margin: 0 0 8px; font-size: 20px; }
+  .quiz-q { text-align: center; font-size: 18px; font-weight: 700; margin: 12px 0 4px; }
+  .quiz-row { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .quiz-row input {
+    width: 90px; height: 52px; text-align: center;
+    font-size: 24px; font-weight: 800;
+    border: 2px solid var(--line); border-radius: 12px;
+  }
+  .quiz-row button {
+    padding: 12px 20px; border-radius: 12px; border: none;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  #btn-check { background: var(--accent); color: #fff; }
+  #btn-new { background: #f1f5f9; color: #475569; }
+  .quiz-result { margin-top: 12px; text-align: center; font-size: 17px; font-weight: 700; min-height: 24px; }
+  .quiz-result.good { color: #16a34a; }
+  .quiz-result.bad { color: #dc2626; }
+
+  footer { text-align: center; margin-top: 20px; color: var(--sub); font-size: 15px; }
+  footer b { color: var(--accent2); }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 数线段</span>
+</div>
+<div class="wrap">
+  <header>
+    <h1>📏 数线段</h1>
+    <p>一条直线上有好几个点，能连出多少条线段？我们一起有顺序地数一数！</p>
+  </header>
+
+  <section class="card">
+    <div class="label">① 选一选：直线上有几个点？</div>
+    <div class="btn-row" id="pointBtns"></div>
+  </section>
+
+  <section class="card">
+    <div class="tabs">
+      <button id="tab-start" class="tab active">方法一：按起点数</button>
+      <button id="tab-length" class="tab">方法二：按长度数</button>
+      <button id="tab-formula" class="tab">看公式</button>
+    </div>
+
+    <div id="panel-figure">
+      <div class="figure-box">
+        <svg id="figSvg" viewBox="0 0 920 360" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="hint">💡 点下面的彩色分类，就能只看那一类线段（再点一次返回）</div>
+      <div id="legend" class="legend"></div>
+      <div class="expr" id="expr"></div>
+      <div class="explain" id="explain"></div>
+      <div class="step-btns">
+        <button id="btn-prev">◀ 上一步</button>
+        <button id="btn-next">下一步 ▶</button>
+        <button id="btn-all">展示全部</button>
+        <button id="btn-reset">重新开始</button>
+      </div>
+    </div>
+
+    <div id="panel-formula" class="hidden">
+      <div class="formula-card">
+        <div>如果有 <b id="fN">4</b> 个点，线段总数是：</div>
+        <div class="formula-big" id="fFormula">4 × 3 ÷ 2 = 6 条</div>
+        <div class="formula-ex">📌 记法：<span class="pill">点数 ×（点数 − 1）÷ 2</span></div>
+        <div class="formula-why">
+          💡 <b>为什么除以 2？</b><br>
+          每个点都能和其他 <span id="fOther">3</span> 个点连成线段，所以 n 个点一共能连
+          n × (n−1) 次；但每条线段（比如 AB 和 BA）被数了 <b>2 次</b>，所以要再除以 2。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="sec-title">🧩 拓展：数角 & 数三角形</h2>
+    <p class="sec-sub">原来「数线段」的本领，还能用来数角和数三角形！规律是一模一样的～</p>
+
+    <div class="ext-block">
+      <div class="ext-head">📐 数一数：角</div>
+      <div class="label">从一个点伸出几条射线？</div>
+      <div class="btn-row" id="angleBtns"></div>
+      <div class="figure-box">
+        <svg id="angleSvg" viewBox="0 0 640 320" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="hint">💡 点下面的彩色分类，只看那一类角</div>
+      <div id="angleLegend" class="legend"></div>
+      <div class="expr" id="angleExpr"></div>
+      <div class="explain" id="angleExplain"></div>
+    </div>
+
+    <div class="ext-block">
+      <div class="ext-head">🔺 数一数：三角形</div>
+      <div class="label">大三角形的底边分成几格？</div>
+      <div class="btn-row" id="triBtns"></div>
+      <div class="figure-box">
+        <svg id="triSvg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="hint">💡 每个向下鼓的彩色弧线 = 一个三角形（它底边的一段），点分类只看那一类</div>
+      <div id="triLegend" class="legend"></div>
+      <div class="expr" id="triExpr"></div>
+      <div class="explain" id="triExplain"></div>
+    </div>
+  </section>
+
+  <section class="card quiz">
+    <h2>🎯 小练习</h2>
+    <div class="figure-box small">
+      <svg id="quizSvg" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="quiz-q">数一数：图上共有多少条线段？</div>
+    <div class="quiz-row">
+      <input id="quizInput" type="number" min="1" max="40" placeholder="?" inputmode="numeric">
+      <button id="btn-check">检查</button>
+      <button id="btn-new">换一题</button>
+    </div>
+    <div id="quizResult" class="quiz-result"></div>
+  </section>
+
+  <footer>小口诀：<b>点数 ×（点数 − 1）÷ 2</b></footer>
+</div>
+
+<script>
+const labels = ['A','B','C','D','E','F','G','H'];
+const palette = ['#ef4444','#f59e0b','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];
+
+/* ============ 数线段 ============ */
+let n = 4;          // 当前点数
+let mode = 'start'; // 'start' | 'length' | 'formula'
+let step = 0;       // 已展示的“组”数
+let focus = -1;     // 高亮查看的分类下标，-1 表示无
+
+function getGroups() {
+  const groups = [];
+  if (mode === 'start') {
+    for (let g = 0; g < n - 1; g++) {
+      const segs = [];
+      for (let j = g + 1; j < n; j++) segs.push({ i: g, j, len: j - g });
+      groups.push({ segs, color: palette[g], key: '从 ' + labels[g] + ' 点出发', short: labels[g] + '出发' });
+    }
+  } else {
+    for (let g = 0; g < n - 1; g++) {
+      const len = g + 1, segs = [];
+      for (let i = 0; i + len < n; i++) segs.push({ i, j: i + len, len });
+      groups.push({ segs, color: palette[g], key: len + ' 小段', short: len + '小段' });
+    }
+  }
+  return groups;
+}
+
+const segName = s => labels[s.i] + labels[s.j];
+
+function renderFigure() {
+  const svg = document.getElementById('figSvg');
+  const groups = getGroups();
+  const W = 920, H = 360, lineY = 282, x0 = 70, x1 = 850;
+  const gap = (x1 - x0) / (n - 1);
+  let s = '';
+  s += `<line x1="${x0}" y1="${lineY}" x2="${x1}" y2="${lineY}" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>`;
+
+  const focusActive = focus >= 0;
+  groups.forEach((g, idx) => {
+    const draw = focusActive ? true : (idx < step);
+    if (!draw) return;
+    const isFocused = focusActive && idx === focus;
+    const faint = focusActive && idx !== focus;
+    g.segs.forEach(seg => {
+      const xi = x0 + seg.i * gap, xj = x0 + seg.j * gap;
+      const h = 30 + seg.len * 26;
+      const mx = (xi + xj) / 2, my = lineY - h;
+      s += `<path class="arc" pathLength="100" d="M ${xi} ${lineY} Q ${mx} ${my} ${xj} ${lineY}" fill="none" stroke="${g.color}" stroke-width="${isFocused ? 6 : 4.5}" stroke-linecap="round" opacity="${faint ? 0.12 : 1}"/>`;
+    });
+  });
+
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * gap;
+    s += `<circle cx="${x}" cy="${lineY}" r="11" fill="#fff" stroke="#334155" stroke-width="3.5"/>`;
+  }
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * gap;
+    s += `<text x="${x}" y="${lineY + 36}" text-anchor="middle" font-size="24" font-weight="700" fill="#334155">${labels[i]}</text>`;
+  }
+  svg.innerHTML = s;
+}
+
+function renderInfo() {
+  const groups = getGroups();
+  const total = n * (n - 1) / 2;
+  const counts = groups.map(g => g.segs.length);
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = groups.map((g, idx) => {
+    const on = focus >= 0 ? (idx === focus ? 1 : 0.5) : (idx < step ? 1 : 0.3);
+    const focused = focus === idx;
+    return `<button class="chip${focused ? ' focused' : ''}" style="opacity:${on}" onclick="toggleFocus(${idx})"><span class="dot" style="background:${g.color}"></span>${g.short} · ${g.segs.length}条</button>`;
+  }).join('');
+
+  const expr = document.getElementById('expr');
+  const explain = document.getElementById('explain');
+  if (focus >= 0) {
+    const g = groups[focus];
+    expr.textContent = g.key + '：' + g.segs.length + ' 条';
+    explain.innerHTML = '<b>' + g.key + '</b> 的线段有 <b>' + g.segs.length + '</b> 条 —— ' +
+      g.segs.map(segName).join('、') + '。（再点一次这个分类返回）';
+  } else if (step === 0) {
+    expr.textContent = '👆 点「下一步」开始数';
+    explain.innerHTML = mode === 'start'
+      ? '从最左边的点开始，每个点<b>只往右连</b>，就不怕漏、不怕重复。'
+      : '先数<b>1 小段</b>，再数 <b>2 小段</b>、<b>3 小段</b>……一层一层数。';
+  } else {
+    const shown = counts.slice(0, step);
+    const sum = shown.reduce((a, b) => a + b, 0);
+    expr.textContent = shown.join(' + ') + ' = ' + sum +
+      (step < groups.length ? '（还没数完，继续！）' : ' 条 ✅');
+    const g = groups[step - 1];
+    explain.innerHTML = '第 ' + step + ' 步：<b>' + g.key + '</b> 的线段有 <b>' + g.segs.length + '</b> 条 —— ' +
+      g.segs.map(segName).join('、');
+  }
+}
+
+function renderFormula() {
+  document.getElementById('fN').textContent = n;
+  document.getElementById('fFormula').textContent = n + ' × ' + (n - 1) + ' ÷ 2 = ' + (n * (n - 1) / 2) + ' 条';
+  document.getElementById('fOther').textContent = n - 1;
+}
+
+function render() {
+  const btns = document.getElementById('pointBtns');
+  btns.innerHTML = '';
+  for (let k = 3; k <= 8; k++) {
+    const b = document.createElement('button');
+    b.className = 'pt-btn' + (k === n ? ' active' : '');
+    b.textContent = k;
+    b.onclick = () => { n = k; step = 0; focus = -1; render(); };
+    btns.appendChild(b);
+  }
+
+  ['start','length','formula'].forEach(m => {
+    document.getElementById('tab-' + m).classList.toggle('active', m === mode);
+  });
+  document.getElementById('panel-figure').classList.toggle('hidden', mode === 'formula');
+  document.getElementById('panel-formula').classList.toggle('hidden', mode !== 'formula');
+
+  document.getElementById('btn-prev').disabled = (step === 0 || focus >= 0 || mode === 'formula');
+  document.getElementById('btn-next').disabled = (step >= n - 1 || focus >= 0 || mode === 'formula');
+  document.getElementById('btn-all').disabled = (mode === 'formula');
+  document.getElementById('btn-reset').disabled = (mode === 'formula');
+
+  if (mode === 'formula') { renderFormula(); }
+  else { renderFigure(); renderInfo(); }
+}
+
+function toggleFocus(idx) {
+  focus = (focus === idx) ? -1 : idx;
+  render();
+}
+
+/* ============ 拓展：数角 ============ */
+let angleN = 4;        // 射线条数
+let angleFocus = -1;
+
+function angleGroups() {
+  const groups = [];
+  for (let g = 0; g < angleN - 1; g++) {
+    const span = g + 1;
+    const segs = [];
+    for (let i = 0; i + span < angleN; i++) segs.push({ i, j: i + span, span });
+    groups.push({ segs, color: palette[g], key: span + ' 格角', count: segs.length });
+  }
+  return groups;
+}
+
+function angleGroupNumbers(gIdx) {
+  let start = 1;
+  for (let k = 0; k < gIdx; k++) start += (angleN - 1 - k);
+  const count = angleN - 1 - gIdx;
+  const nums = [];
+  for (let p = 0; p < count; p++) nums.push(start + p);
+  return nums;
+}
+
+function renderAngle() {
+  const svg = document.getElementById('angleSvg');
+  const groups = angleGroups();
+  const ox = 320, oy = 268, R = 185, half = 55 * Math.PI / 180;
+  const rayAngle = k => -half + k * (2 * half / (angleN - 1));
+  const tip = k => [ox + R * Math.sin(rayAngle(k)), oy - R * Math.cos(rayAngle(k))];
+  let s = '';
+
+  for (let k = 0; k < angleN; k++) {
+    const [x, y] = tip(k);
+    s += `<line x1="${ox}" y1="${oy}" x2="${x}" y2="${y}" stroke="#64748b" stroke-width="3"/>`;
+  }
+
+  groups.forEach((g, idx) => {
+    const isFocus = angleFocus >= 0;
+    const faint = isFocus && idx !== angleFocus;
+    const active = !isFocus || idx === angleFocus;
+    const rBase = 20 + idx * 22;
+    const nums = angleGroupNumbers(idx);
+    g.segs.forEach((pair, p) => {
+      const rr = rBase + p * 8;
+      const a1 = rayAngle(pair.i), a2 = rayAngle(pair.j);
+      const x1 = ox + rr * Math.sin(a1), y1 = oy - rr * Math.cos(a1);
+      const x2 = ox + rr * Math.sin(a2), y2 = oy - rr * Math.cos(a2);
+      s += `<path d="M ${x1} ${y1} A ${rr} ${rr} 0 0 1 ${x2} ${y2}" fill="none" stroke="${g.color}" stroke-width="${active ? 5 : 3}" stroke-linecap="round" opacity="${faint ? 0.12 : 1}"/>`;
+      const am = (a1 + a2) / 2;
+      const lx = ox + (rr + 12) * Math.sin(am), ly = oy - (rr + 12) * Math.cos(am);
+      s += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#1f2937" stroke="#ffffff" stroke-width="3" paint-order="stroke" opacity="${faint ? 0 : 1}">${nums[p]}</text>`;
+    });
+  });
+
+  s += `<circle cx="${ox}" cy="${oy}" r="6" fill="#334155"/>`;
+  s += `<text x="${ox}" y="${oy + 24}" text-anchor="middle" font-size="18" font-weight="700" fill="#334155">O</text>`;
+  svg.innerHTML = s;
+  renderAngleInfo();
+}
+
+function renderAngleInfo() {
+  const groups = angleGroups();
+  const total = angleN * (angleN - 1) / 2;
+  document.getElementById('angleLegend').innerHTML = groups.map((g, idx) => {
+    const on = angleFocus >= 0 ? (idx === angleFocus ? 1 : 0.5) : 1;
+    const focused = angleFocus === idx;
+    return `<button class="chip${focused ? ' focused' : ''}" style="opacity:${on}" onclick="toggleAngleFocus(${idx})"><span class="dot" style="background:${g.color}"></span>${g.key} · ${g.count}个</button>`;
+  }).join('');
+
+  const expr = document.getElementById('angleExpr');
+  const explain = document.getElementById('angleExplain');
+  if (angleFocus >= 0) {
+    const g = groups[angleFocus];
+    const nums = angleGroupNumbers(angleFocus);
+    expr.textContent = g.key + ' 有 ' + g.count + ' 个';
+    explain.innerHTML = '正在看：<b>' + g.key + '</b> 的角，共 <b>' + g.count + '</b> 个（角 ' + nums.join('、') + '）。（再点一次返回全部）';
+  } else {
+    expr.textContent = groups.map(g => g.count).join(' + ') + ' = ' + total + ' 个角';
+    explain.innerHTML = '规律和数线段一样！' + angleN + ' 条射线 → ' + angleN + '×' + (angleN - 1) + '÷2 = ' + total + ' 个角。每个角上的小数字就是它的编号。';
+  }
+}
+
+function renderAngleBtns() {
+  const btns = document.getElementById('angleBtns');
+  btns.innerHTML = '';
+  for (let k = 3; k <= 8; k++) {
+    const b = document.createElement('button');
+    b.className = 'pt-btn' + (k === angleN ? ' active' : '');
+    b.textContent = k;
+    b.onclick = () => { angleN = k; angleFocus = -1; renderAngleBtns(); renderAngle(); };
+    btns.appendChild(b);
+  }
+}
+
+function toggleAngleFocus(idx) {
+  angleFocus = (angleFocus === idx) ? -1 : idx;
+  renderAngle();
+}
+
+/* ============ 拓展：数三角形 ============ */
+let triSeg = 3;       // 底边格数 m
+let triFocus = -1;
+
+function triGroups() {
+  const m = triSeg;
+  const groups = [];
+  for (let g = 0; g < m; g++) {
+    const s = g + 1;
+    const tris = [];
+    for (let i = 0; i + s <= m; i++) tris.push({ i, j: i + s, s });
+    groups.push({ tris, color: palette[g], key: s + ' 格底', count: m - s + 1 });
+  }
+  return groups;
+}
+
+function triGroupNumbers(gIdx) {
+  const m = triSeg;
+  let start = 1;
+  for (let k = 0; k < gIdx; k++) start += (m - k);
+  const count = m - gIdx;
+  const nums = [];
+  for (let p = 0; p < count; p++) nums.push(start + p);
+  return nums;
+}
+
+function renderTri() {
+  const svg = document.getElementById('triSvg');
+  const groups = triGroups();
+  const m = triSeg;
+  const ax = 320, ay = 55, bx0 = 70, bx1 = 570, by = 205;
+  const baseX = k => bx0 + k * ((bx1 - bx0) / m);
+  let s = '';
+
+  // 大三角形外框（淡灰）与内部分割线
+  s += `<path d="M ${ax} ${ay} L ${bx0} ${by} L ${bx1} ${by} Z" fill="none" stroke="#cbd5e1" stroke-width="2"/>`;
+  for (let k = 1; k < m; k++) {
+    s += `<line x1="${ax}" y1="${ay}" x2="${baseX(k)}" y2="${by}" stroke="#e2e8f0" stroke-width="1.5"/>`;
+  }
+  // 底边
+  s += `<line x1="${bx0}" y1="${by}" x2="${bx1}" y2="${by}" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>`;
+
+  // 聚焦时：把这一类三角形用淡色填充出来，让“弧线 = 三角形”更直观
+  if (triFocus >= 0) {
+    const g = groups[triFocus];
+    g.tris.forEach(t => {
+      const d = `M ${ax} ${ay} L ${baseX(t.i)} ${by} L ${baseX(t.j)} ${by} Z`;
+      s += `<path d="${d}" fill="${g.color}" fill-opacity="0.22" stroke="none"/>`;
+    });
+  }
+
+  // 每个三角形 = 底边的一段，用“向下鼓”的弧线表示
+  groups.forEach((g, idx) => {
+    const isFocus = triFocus >= 0;
+    const faint = isFocus && idx !== triFocus;
+    const active = !isFocus || idx === triFocus;
+    const nums = triGroupNumbers(idx);
+    g.tris.forEach((t, p) => {
+      const x1 = baseX(t.i), x2 = baseX(t.j);
+      const h = 20 + (t.j - t.i) * 18;   // 跨度越大，弧越往下
+      const mx = (x1 + x2) / 2, my = by + h;
+      s += `<path class="arc" pathLength="100" d="M ${x1} ${by} Q ${mx} ${my} ${x2} ${by}" fill="none" stroke="${g.color}" stroke-width="${active ? 5 : 3}" stroke-linecap="round" opacity="${faint ? 0.12 : 1}"/>`;
+      s += `<text x="${mx}" y="${my + 14}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="700" fill="#1f2937" stroke="#ffffff" stroke-width="3" paint-order="stroke" opacity="${faint ? 0 : 1}">${nums[p]}</text>`;
+    });
+  });
+
+  // 底边上的点
+  for (let k = 0; k <= m; k++) {
+    s += `<circle cx="${baseX(k)}" cy="${by}" r="6" fill="#fff" stroke="#334155" stroke-width="2.5"/>`;
+  }
+  // 顶点 A
+  s += `<circle cx="${ax}" cy="${ay}" r="6" fill="#334155"/>`;
+  s += `<text x="${ax}" y="${ay - 15}" text-anchor="middle" font-size="18" font-weight="700" fill="#334155">A</text>`;
+
+  svg.innerHTML = s;
+  renderTriInfo();
+}
+
+function renderTriInfo() {
+  const groups = triGroups();
+  const m = triSeg;
+  const total = m * (m + 1) / 2;
+  document.getElementById('triLegend').innerHTML = groups.map((g, idx) => {
+    const on = triFocus >= 0 ? (idx === triFocus ? 1 : 0.5) : 1;
+    const focused = triFocus === idx;
+    return `<button class="chip${focused ? ' focused' : ''}" style="opacity:${on}" onclick="toggleTriFocus(${idx})"><span class="dot" style="background:${g.color}"></span>${g.key} · ${g.count}个</button>`;
+  }).join('');
+
+  const expr = document.getElementById('triExpr');
+  const explain = document.getElementById('triExplain');
+  if (triFocus >= 0) {
+    const g = groups[triFocus];
+    const nums = triGroupNumbers(triFocus);
+    expr.textContent = g.key + ' 有 ' + g.count + ' 个';
+    explain.innerHTML = '正在看：底边占 <b>' + g.key + '</b> 的三角形，共 <b>' + g.count + '</b> 个（三角形 ' + nums.join('、') + '）。（再点一次返回全部）';
+  } else {
+    expr.textContent = groups.map(g => g.count).join(' + ') + ' = ' + total + ' 个三角形';
+    explain.innerHTML = '数三角形，其实就是数<b>底边上的线段</b>！每个向下鼓的弧线 = 一个三角形。底边分成 ' + m + ' 格 → ' + m + '×' + (m + 1) + '÷2 = ' + total + ' 个。';
+  }
+}
+
+function renderTriBtns() {
+  const btns = document.getElementById('triBtns');
+  btns.innerHTML = '';
+  for (let k = 2; k <= 6; k++) {
+    const b = document.createElement('button');
+    b.className = 'pt-btn' + (k === triSeg ? ' active' : '');
+    b.textContent = k;
+    b.onclick = () => { triSeg = k; triFocus = -1; renderTriBtns(); renderTri(); };
+    btns.appendChild(b);
+  }
+}
+
+function toggleTriFocus(idx) {
+  triFocus = (triFocus === idx) ? -1 : idx;
+  renderTri();
+}
+
+/* ============ 练习 ============ */
+let quizN = 4;
+
+function renderQuiz() {
+  const svg = document.getElementById('quizSvg');
+  const W = 480, H = 140, lineY = 92, x0 = 42, x1 = 438;
+  const gap = (x1 - x0) / (quizN - 1);
+  let s = `<line x1="${x0}" y1="${lineY}" x2="${x1}" y2="${lineY}" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>`;
+  for (let i = 0; i < quizN; i++) {
+    const x = x0 + i * gap;
+    s += `<circle cx="${x}" cy="${lineY}" r="10" fill="#fff" stroke="#334155" stroke-width="3"/>`;
+  }
+  for (let i = 0; i < quizN; i++) {
+    const x = x0 + i * gap;
+    s += `<text x="${x}" y="${lineY + 32}" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">${labels[i]}</text>`;
+  }
+  svg.innerHTML = s;
+}
+
+function newQuiz() {
+  quizN = 3 + Math.floor(Math.random() * 4); // 3~6 个点
+  document.getElementById('quizInput').value = '';
+  const r = document.getElementById('quizResult');
+  r.textContent = ''; r.className = 'quiz-result';
+  renderQuiz();
+}
+
+function checkQuiz() {
+  const r = document.getElementById('quizResult');
+  const ans = parseInt(document.getElementById('quizInput').value, 10);
+  const correct = quizN * (quizN - 1) / 2;
+  if (Number.isNaN(ans)) { r.textContent = '请先填一个数哦～'; r.className = 'quiz-result bad'; return; }
+  if (ans === correct) {
+    r.textContent = '✅ 答对啦！' + quizN + ' 个点，' + (quizN - 1) + '+…+1 = ' + correct + ' 条。真棒！';
+    r.className = 'quiz-result good';
+  } else {
+    r.textContent = '❌ 再想想～ 先数 1 小段、再数 2 小段……正确答案是 ' + correct + ' 条。';
+    r.className = 'quiz-result bad';
+  }
+}
+
+/* ============ 事件绑定与启动 ============ */
+document.getElementById('tab-start').onclick = () => { mode = 'start'; focus = -1; render(); };
+document.getElementById('tab-length').onclick = () => { mode = 'length'; focus = -1; render(); };
+document.getElementById('tab-formula').onclick = () => { mode = 'formula'; render(); };
+document.getElementById('btn-prev').onclick = () => { if (step > 0) { step--; render(); } };
+document.getElementById('btn-next').onclick = () => { if (step < n - 1) { step++; render(); } };
+document.getElementById('btn-all').onclick = () => { focus = -1; step = n - 1; render(); };
+document.getElementById('btn-reset').onclick = () => { focus = -1; step = 0; render(); };
+document.getElementById('btn-check').onclick = checkQuiz;
+document.getElementById('btn-new').onclick = newQuiz;
+document.getElementById('quizInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkQuiz(); });
+
+renderAngleBtns();
+renderAngle();
+renderTriBtns();
+renderTri();
+newQuiz();
+render();
+</script>
+</body>
+</html>

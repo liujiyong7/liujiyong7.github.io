@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雷达站特工：听令射击</title>
+<style>
+  :root{
+    --blue:#2563eb;
+    --ink:#1e293b;
+    --muted:#64748b;
+    --amber:#f59e0b;
+    --pink:#ec4899;
+    --bg1:#e0f2fe;
+    --bg2:#dbeafe;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2) 55%,#ede9fe);
+    color:var(--ink);
+    min-height:100vh;
+    padding:18px 12px 40px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app{ max-width:760px; margin:0 auto; }
+
+  h1{
+    text-align:center; font-size:clamp(22px,5vw,30px);
+    margin:4px 0 2px; letter-spacing:1px; color:#0f172a;
+  }
+  .subtitle{ text-align:center; color:var(--muted); font-size:14px; margin-bottom:14px; }
+
+  /* ===== 顶部：观察员 + 计分板 + 刷新 ===== */
+  .topbar{
+    display:flex; gap:12px; align-items:stretch; flex-wrap:wrap;
+    background:rgba(255,255,255,.72);
+    border:2px solid #fff; border-radius:20px;
+    padding:12px; box-shadow:0 10px 24px rgba(37,99,235,.14);
+    backdrop-filter:blur(4px);
+  }
+  .observer{
+    flex:1 1 320px; min-width:260px;
+    background:#fff; border-radius:16px; padding:14px 16px;
+    position:relative; box-shadow:0 4px 12px rgba(15,23,42,.08);
+    border:2px solid #dbeafe;
+  }
+  .observer::after{
+    content:""; position:absolute; left:26px; bottom:-11px;
+    width:0; height:0;
+    border:11px solid transparent; border-top-color:#fff; border-bottom:0;
+  }
+  .observer .report{ font-size:clamp(21px,3.4vw,26px); font-weight:800; line-height:1.4; }
+  .observer .report b{
+    color:#c026d3; font-size:1.28em;
+    background:#fef08a; padding:3px 10px; border-radius:12px;
+    border:2px solid #facc15; white-space:nowrap;
+    box-shadow:0 2px 6px rgba(250,204,21,.5);
+  }
+  .observer .sub{ margin-top:6px; font-size:14.5px; color:#475569; line-height:1.5; }
+  .observer .dir{ color:#e11d48; font-weight:800; }
+
+  .rightcol{ display:flex; flex-direction:column; gap:10px; }
+  .scoreboard{ display:flex; gap:10px; }
+  .pill{
+    background:#fff; border-radius:14px; padding:8px 14px;
+    text-align:center; min-width:84px; box-shadow:0 4px 10px rgba(15,23,42,.08);
+    border:2px solid #e0f2fe;
+  }
+  .pill .label{ font-size:12px; color:var(--muted); font-weight:700; }
+  .pill .num{ font-size:26px; font-weight:900; color:var(--blue); line-height:1.15; }
+  .pill.hi .num{ color:var(--amber); }
+
+  .btn-refresh{
+    flex:1; border:0; cursor:pointer;
+    background:linear-gradient(135deg,#fbbf24,#f59e0b);
+    color:#7c2d12; font-size:14px; font-weight:800;
+    padding:11px 14px; border-radius:14px;
+    box-shadow:0 5px 0 #b45309;
+    transition:transform .06s ease, box-shadow .06s ease;
+  }
+  .btn-refresh:active{ transform:translateY(3px); box-shadow:0 2px 0 #b45309; }
+  .btn-refresh:disabled{ opacity:.6; cursor:not-allowed; }
+
+  /* ===== 地图 ===== */
+  .map-wrap{
+    position:relative; width:min(94vw,720px); aspect-ratio:1/1;
+    margin:18px auto 0; user-select:none;
+  }
+  .map-wrap svg{ width:100%; height:100%; display:block; cursor:crosshair; border-radius:18px; }
+
+  .gv,.gh{ stroke:#dbe4f0; stroke-width:1; }
+  .axis{ stroke:var(--amber); stroke-width:3.5; }
+  .axarrow{ fill:var(--amber); }
+  .axislabel{ font-size:15px; font-weight:900; fill:#b45309; }
+  .tnum{ font-size:11px; fill:#64748b; font-family:inherit; }
+  .tickbg{ fill:transparent; }
+  .tick.on .tickbg{ fill:#fde047; stroke:var(--amber); stroke-width:1.2; }
+  .tick.on .tnum{ fill:#92400e; font-weight:900; }
+  .originDot{ fill:#0ea5e9; }
+  .originLabel{ font-size:12px; fill:#0369a1; font-weight:800; }
+  .hoverline{ stroke:var(--pink); stroke-width:2.5; stroke-dasharray:7 6; opacity:.9; }
+  .hoverdot{ fill:rgba(236,72,153,.16); stroke:var(--pink); stroke-width:2; }
+
+  /* 方向提示 */
+  .hint{
+    position:absolute; display:flex; align-items:center; gap:4px;
+    font-size:13px; font-weight:800; color:#fff;
+    background:rgba(30,58,138,.88);
+    padding:5px 11px; border-radius:999px; pointer-events:none;
+    box-shadow:0 4px 10px rgba(30,58,138,.35); z-index:5;
+    white-space:nowrap;
+  }
+  .hint-top{ top:4px; left:50%; transform:translateX(-50%); }
+  .hint-bottom{ bottom:4px; left:50%; transform:translateX(-50%); }
+  .hint-left, .hint-right{
+    display:block; writing-mode:vertical-rl; text-orientation:upright;
+    padding:10px 7px;
+  }
+  .hint-left{ left:2px; top:50%; transform:translateY(-50%); }
+  .hint-right{ right:2px; top:50%; transform:translateY(-50%); }
+
+  .hunter{
+    position:absolute; left:1px; bottom:1px; z-index:6; pointer-events:none;
+    font-size:46px; line-height:1; filter:drop-shadow(0 3px 4px rgba(15,23,42,.3));
+  }
+  .hunter .tag{
+    display:block; text-align:center; font-size:11px; font-weight:800;
+    color:#7c2d12; background:rgba(255,255,255,.9); border-radius:8px;
+    padding:1px 6px; margin-top:-2px;
+  }
+  .hunter.fire{ animation:hunterPulse .45s ease; }
+  @keyframes hunterPulse{
+    0%{ transform:scale(1);} 40%{ transform:scale(1.28) rotate(-8deg);} 100%{ transform:scale(1);}
+  }
+
+  /* 气泡、子弹、爆炸 */
+  .bubble{
+    position:absolute; pointer-events:none; z-index:30;
+    background:#1f2937; color:#fff; padding:5px 10px; border-radius:9px;
+    font-size:15px; font-weight:800; opacity:0; white-space:nowrap;
+    box-shadow:0 4px 10px rgba(15,23,42,.35);
+  }
+  .bullet{
+    position:absolute; pointer-events:none; z-index:40;
+    font-size:28px; line-height:1; opacity:0;
+    filter:drop-shadow(0 0 7px var(--amber));
+  }
+  .explosion{ position:absolute; pointer-events:none; z-index:50; transform:translate(-50%,-50%); }
+  .explosion .core{ font-size:34px; position:absolute; left:0; top:0; transform:translate(-50%,-50%); animation:pop .45s ease forwards; }
+  .explosion .star{
+    position:absolute; left:0; top:0; font-size:22px; line-height:1;
+    animation:burst .75s ease-out forwards;
+  }
+  @keyframes pop{ 0%{ transform:translate(-50%,-50%) scale(.2); opacity:1;} 70%{ transform:translate(-50%,-50%) scale(1.25); opacity:1;} 100%{ transform:translate(-50%,-50%) scale(1.1); opacity:0;} }
+  @keyframes burst{
+    0%{ transform:translate(-50%,-50%) scale(.25) rotate(0); opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.35) rotate(150deg); opacity:0; }
+  }
+
+  .caption{ text-align:center; color:var(--muted); font-size:13px; margin-top:10px; }
+  @media (max-width:520px){
+    .hint{ font-size:11px; padding:3px 8px; }
+    .hunter{ font-size:38px; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 雷达站坐标</span>
+</div>
+<div class="app">
+  <h1>📡 雷达站特工：听令射击</h1>
+  <p class="subtitle">观察员报坐标，特工点格子，猎人发子弹！</p>
+
+  <div class="topbar">
+    <div class="observer" id="observer">
+      <div class="report" id="report"></div>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="rightcol">
+      <div class="scoreboard">
+        <div class="pill"><div class="label">得分</div><div class="num" id="score">0</div></div>
+        <div class="pill hi"><div class="label">最高分</div><div class="num" id="high">0</div></div>
+      </div>
+      <button class="btn-refresh" id="btnRefresh">🔁 听不清，换一个坐标</button>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <div class="hint hint-top">🚁 北（向上飞）</div>
+    <div class="hint hint-bottom">⚓ 南（向下潜）</div>
+    <div class="hint hint-right">🚗 东（向右开）</div>
+    <div class="hint hint-left">🐢 西（向左爬）</div>
+
+    <div class="hunter" id="hunter">📡<span class="tag">猎人</span></div>
+
+    <svg id="svg" viewBox="0 0 740 740" preserveAspectRatio="xMidYMid meet">
+      <g id="gridG"></g>
+      <g id="axesG"></g>
+      <g id="labelsG"></g>
+      <g id="hoverG">
+        <line id="hV" class="hoverline" display="none"></line>
+        <line id="hH" class="hoverline" display="none"></line>
+        <circle id="hDot" class="hoverdot" r="8" display="none"></circle>
+      </g>
+    </svg>
+
+    <div class="bubble" id="bubble"></div>
+    <div class="bullet" id="bullet">🥕</div>
+  </div>
+
+  <p class="caption">把鼠标移到格子上看辅助线，点一下就能发射子弹！打对 +10 分，永无止境冲最高分。</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ===== 网格参数 =====
+  var CELL = 28;      // 每格像素
+  var HALF = 10;      // 范围 -10 .. 10
+  var PAD  = 90;      // 四周留白（放数字、猎人、方向提示）
+  var VB   = PAD * 2 + (2 * HALF) * CELL;   // 90*2 + 20*28 = 740
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var KEY = "radarHighScore";
+
+  function px(x){ return PAD + (x + HALF) * CELL; }
+  function py(y){ return PAD + (HALF - y) * CELL; }
+
+  // ===== DOM =====
+  var svg = document.getElementById("svg");
+  var wrap = document.getElementById("mapWrap");
+  var reportEl = document.getElementById("report");
+  var subEl = document.getElementById("sub");
+  var scoreEl = document.getElementById("score");
+  var highEl = document.getElementById("high");
+  var refreshBtn = document.getElementById("btnRefresh");
+  var hunterEl = document.getElementById("hunter");
+  var bubbleEl = document.getElementById("bubble");
+  var bulletEl = document.getElementById("bullet");
+  var gridG = document.getElementById("gridG");
+  var axesG = document.getElementById("axesG");
+  var labelsG = document.getElementById("labelsG");
+  var hV = document.getElementById("hV");
+  var hH = document.getElementById("hH");
+  var hDot = document.getElementById("hDot");
+
+  // ===== 状态 =====
+  var target = { x: 0, y: 0 };
+  var score = 0;
+  var high = 0;
+  var flying = false;
+  var prevX = null, prevY = null;
+
+  // ===== 工具 =====
+  function svgEl(name, attrs, text){
+    var n = document.createElementNS(SVGNS, name);
+    for (var k in attrs){ n.setAttribute(k, attrs[k]); }
+    if (text !== undefined){ n.textContent = String(text); }
+    return n;
+  }
+  function rndInt(a, b){ return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+  // ===== 构建坐标网格 =====
+  function buildGrid(){
+    var i;
+    // 细网格线
+    for (i = -HALF; i <= HALF; i++){
+      gridG.appendChild(svgEl("line", {x1:px(i), y1:py(-HALF), x2:px(i), y2:py(HALF), "class":"gv"}));
+      gridG.appendChild(svgEl("line", {x1:px(-HALF), y1:py(i), x2:px(HALF), y2:py(i), "class":"gh"}));
+    }
+    // X 轴（水平粗线）+ 右箭头
+    axesG.appendChild(svgEl("line", {x1:px(-HALF), y1:py(0), x2:px(HALF), y2:py(0), "class":"axis"}));
+    axesG.appendChild(svgEl("polygon", {points:(px(HALF))+","+(py(0))+" "+(px(HALF))+","+(py(0)-7)+" "+(px(HALF)+14)+","+(py(0))+" "+(px(HALF))+","+(py(0)+7), "class":"axarrow"}));
+    axesG.appendChild(svgEl("text", {x:px(HALF)+14, y:py(0)-10, "class":"axislabel"}, "x"));
+    // Y 轴（竖直粗线）+ 上箭头
+    axesG.appendChild(svgEl("line", {x1:px(0), y1:py(-HALF), x2:px(0), y2:py(HALF), "class":"axis"}));
+    axesG.appendChild(svgEl("polygon", {points:px(0)+","+py(-HALF)+" "+(px(0)-7)+","+py(-HALF)+" "+px(0)+","+(py(-HALF)-14)+" "+(px(0)+7)+","+py(-HALF), "class":"axarrow"}));
+    axesG.appendChild(svgEl("text", {x:px(0)+10, y:py(-HALF)-4, "class":"axislabel"}, "y"));
+
+    // 轴上的数字（0 单独用原点标出）
+    for (i = -HALF; i <= HALF; i++){
+      if (i === 0){ continue; }
+      // X 轴数字（在轴下方）
+      var gx = svgEl("g", {"class":"tick", "data-axis":"x", "data-val":i});
+      gx.appendChild(svgEl("rect", {x:px(i)-12, y:py(0)+7, width:24, height:16, rx:5, "class":"tickbg"}));
+      gx.appendChild(svgEl("text", {x:px(i), y:py(0)+19, "class":"tnum", "text-anchor":"middle"}, i));
+      labelsG.appendChild(gx);
+      // Y 轴数字（在轴左侧）
+      var gy = svgEl("g", {"class":"tick", "data-axis":"y", "data-val":i});
+      gy.appendChild(svgEl("rect", {x:px(0)-32, y:py(i)-8, width:27, height:16, rx:5, "class":"tickbg"}));
+      gy.appendChild(svgEl("text", {x:px(0)-7, y:py(i)+4, "class":"tnum", "text-anchor":"end"}, i));
+      labelsG.appendChild(gy);
+    }
+
+    // 原点 (0,0) —— 普通坐标中心
+    labelsG.appendChild(svgEl("circle", {cx:px(0), cy:py(0), r:4, "class":"originDot"}));
+    labelsG.appendChild(svgEl("text", {x:px(0)+9, y:py(0)-7, "class":"originLabel"}, "O(0,0)"));
+  }
+
+  // ===== 方向拆解文字 =====
+  function dirText(x, y){
+    var h = x === 0 ? "原地不动" : (x > 0 ? "向东开" + x + "格" : "向西走" + (-x) + "格");
+    var v = y === 0 ? "原地不动" : (y > 0 ? "向北飞" + y + "格" : "向南潜" + (-y) + "格");
+    return "【" + h + "，" + v + "】";
+  }
+
+  function updateReport(){
+    reportEl.innerHTML = "📢 观察员报告：发现目标，坐标 <b>(" + target.x + ", " + target.y + ")</b> ！";
+    subEl.innerHTML = "🎯 请点击坐标：(" + target.x + ", " + target.y + ") → <span class=\"dir\">" + dirText(target.x, target.y) + "</span>";
+  }
+
+  function correctionText(cx, cy){
+    var parts = [];
+    if (cx !== target.x){ parts.push(target.x > cx ? "更偏【东➡️】" : "更偏【西⬅️】"); }
+    if (cy !== target.y){ parts.push(target.y > cy ? "更偏【北⬆️】" : "更偏【南⬇️】"); }
+    var dir = parts.length ? parts.join("、") : "就差一点点";
+    return "哎呀！你打到了 (" + cx + ", " + cy + ")。真正的目标在 " + dir + " 的地方哦，再试一次！";
+  }
+
+  function showCorrection(cx, cy){
+    reportEl.innerHTML = correctionText(cx, cy);
+    subEl.innerHTML = "💡 目标没有变，继续瞄准！";
+  }
+
+  // ===== 计分 =====
+  function updateScore(){
+    scoreEl.textContent = score;
+    highEl.textContent = high;
+  }
+
+  // ===== 新的一轮 =====
+  function newRound(){
+    var nx, ny;
+    do {
+      nx = rndInt(-HALF, HALF);
+      ny = rndInt(-HALF, HALF);
+    } while (nx === target.x && ny === target.y);
+    target.x = nx;
+    target.y = ny;
+    updateReport();
+    flying = false;
+    refreshBtn.disabled = false;
+  }
+
+  // ===== 音效（Web Audio） =====
+  var actx = null;
+  function ensureAudio(){
+    if (!actx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC){ actx = new AC(); }
+    }
+    if (actx && actx.state === "suspended"){ actx.resume(); }
+  }
+  function tone(freq, t0, dur, type, vol){
+    if (!actx){ return; }
+    var o = actx.createOscillator();
+    var g = actx.createGain();
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0); o.stop(t0 + dur + 0.03);
+  }
+  function playHit(ok){
+    ensureAudio();
+    if (!actx){ return; }
+    var t = actx.currentTime;
+    if (ok){
+      var notes = [523.25, 659.25, 783.99, 1046.50];
+      for (var i = 0; i < notes.length; i++){
+        tone(notes[i], t + i * 0.09, 0.22, "triangle", 0.22);
+      }
+    } else {
+      tone(392.00, t, 0.18, "square", 0.10);
+      tone(293.66, t + 0.15, 0.26, "square", 0.10);
+    }
+  }
+
+  // ===== 悬停辅助线 =====
+  function gridFromEvent(e){
+    var rect = svg.getBoundingClientRect();
+    var vx = (e.clientX - rect.left) * (VB / rect.width);
+    var vy = (e.clientY - rect.top) * (VB / rect.height);
+    var gx = Math.round((vx - PAD) / CELL - HALF);
+    var gy = Math.round(HALF - (vy - PAD) / CELL);
+    if (gx < -HALF || gx > HALF || gy < -HALF || gy > HALF){ return null; }
+    return { x: gx, y: gy };
+  }
+
+  function highlightTick(axis, val){
+    var g = svg.querySelector('.tick[data-axis="' + axis + '"][data-val="' + val + '"]');
+    if (axis === "x"){
+      if (prevX && prevX !== g){ prevX.classList.remove("on"); }
+      prevX = g;
+    } else {
+      if (prevY && prevY !== g){ prevY.classList.remove("on"); }
+      prevY = g;
+    }
+    if (g){ g.classList.add("on"); }
+  }
+
+  function showHover(p, e){
+    hV.setAttribute("x1", px(p.x)); hV.setAttribute("x2", px(p.x));
+    hV.setAttribute("y1", py(p.y)); hV.setAttribute("y2", py(0));
+    hV.setAttribute("display", "block");
+    hH.setAttribute("x1", px(p.x)); hH.setAttribute("x2", px(0));
+    hH.setAttribute("y1", py(p.y)); hH.setAttribute("y2", py(p.y));
+    hH.setAttribute("display", "block");
+    hDot.setAttribute("cx", px(p.x)); hDot.setAttribute("cy", py(p.y));
+    hDot.setAttribute("display", "block");
+
+    highlightTick("x", p.x);
+    highlightTick("y", p.y);
+
+    var wr = wrap.getBoundingClientRect();
+    var bx = e.clientX - wr.left;
+    var by = e.clientY - wr.top;
+    bubbleEl.textContent = "(" + p.x + ", " + p.y + ")";
+    bubbleEl.style.left = bx + "px";
+    bubbleEl.style.top = by + "px";
+    bubbleEl.style.transform = "translate(-50%, -150%)";
+    bubbleEl.style.opacity = "1";
+  }
+
+  function hideHover(){
+    hV.setAttribute("display", "none");
+    hH.setAttribute("display", "none");
+    hDot.setAttribute("display", "none");
+    if (prevX){ prevX.classList.remove("on"); prevX = null; }
+    if (prevY){ prevY.classList.remove("on"); prevY = null; }
+    bubbleEl.style.opacity = "0";
+  }
+
+  // ===== 子弹与爆炸 =====
+  function scaleOf(){ return wrap.clientWidth / VB; }
+
+  function fireBullet(cx, cy, ok){
+    var s = scaleOf();
+    var wr = wrap.getBoundingClientRect();
+    var hr = hunterEl.getBoundingClientRect();
+    var startX = hr.left + hr.width / 2 - wr.left;
+    var startY = hr.top + hr.height / 2 - wr.top;
+    var endX = px(cx) * s;
+    var endY = py(cy) * s;
+
+    hunterEl.classList.add("fire");
+    setTimeout(function(){ hunterEl.classList.remove("fire"); }, 500);
+
+    var t0 = performance.now();
+    var dur = 560;
+    function step(now){
+      var t = Math.min(1, (now - t0) / dur);
+      var e = t * t;
+      var bx = startX + (endX - startX) * e;
+      var by = startY + (endY - startY) * e;
+      bulletEl.style.left = bx + "px";
+      bulletEl.style.top = by + "px";
+      bulletEl.style.transform = "translate(-50%,-50%)";
+      bulletEl.style.opacity = "1";
+      if (t < 1){
+        requestAnimationFrame(step);
+      } else {
+        bulletEl.style.opacity = "0";
+        explode(endX, endY);
+        onHit(cx, cy, ok);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function explode(x, y){
+    var cont = document.createElement("div");
+    cont.className = "explosion";
+    cont.style.left = x + "px";
+    cont.style.top = y + "px";
+
+    var core = document.createElement("span");
+    core.className = "core";
+    core.textContent = "💥";
+    cont.appendChild(core);
+
+    var em = ["✨", "⭐", "🌟", "✨", "⭐"];
+    for (var i = 0; i < 8; i++){
+      var st = document.createElement("span");
+      st.className = "star";
+      st.textContent = em[i % em.length];
+      var a = Math.random() * Math.PI * 2;
+      var d = 32 + Math.random() * 52;
+      st.style.setProperty("--dx", Math.cos(a) * d + "px");
+      st.style.setProperty("--dy", Math.sin(a) * d + "px");
+      st.style.animationDelay = (Math.random() * 0.1) + "s";
+      cont.appendChild(st);
+    }
+    wrap.appendChild(cont);
+    setTimeout(function(){ cont.remove(); }, 900);
+  }
+
+  function onHit(cx, cy, ok){
+    if (ok){
+      playHit(true);
+      score += 10;
+      if (score > high){
+        high = score;
+        try { localStorage.setItem(KEY, String(high)); } catch (e) {}
+      }
+      updateScore();
+      reportEl.innerHTML = "🎉 太棒了，特工！精准命中 (" + cx + ", " + cy + ") ！";
+      subEl.innerHTML = "⭐ 得分 +10！观察员正在搜寻下一个目标……";
+      setTimeout(newRound, 850);
+    } else {
+      playHit(false);
+      showCorrection(cx, cy);
+      setTimeout(function(){ flying = false; }, 320);
+    }
+  }
+
+  // ===== 点击射击 =====
+  function onGridClick(e){
+    if (flying){ return; }
+    var p = gridFromEvent(e);
+    if (!p){ return; }
+    ensureAudio();
+    flying = true;
+    refreshBtn.disabled = true;
+    fireBullet(p.x, p.y, (p.x === target.x && p.y === target.y));
+  }
+
+  // ===== 尺寸同步（保证正方形） =====
+  function syncSize(){
+    wrap.style.height = wrap.clientWidth + "px";
+  }
+
+  // ===== 初始化 =====
+  function init(){
+    try { high = parseInt(localStorage.getItem(KEY), 10) || 0; } catch (e) { high = 0; }
+    buildGrid();
+    updateScore();
+    newRound();
+
+    svg.addEventListener("mousemove", function(e){
+      var p = gridFromEvent(e);
+      if (p){ showHover(p, e); } else { hideHover(); }
+    });
+    svg.addEventListener("mouseleave", hideHover);
+    svg.addEventListener("click", onGridClick);
+
+    refreshBtn.addEventListener("click", function(){
+      if (!flying){ newRound(); }
+    });
+
+    window.addEventListener("resize", syncSize);
+    syncSize();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

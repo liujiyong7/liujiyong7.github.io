@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>加法 vs 乘法 · 路径大冒险</title>
+<style>
+  /* ============ 全局 ============ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: linear-gradient(160deg, #fdf2f8 0%, #e0f2fe 45%, #fef9c3 100%);
+    color: #334155;
+    padding: 22px 16px 48px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  /* ============ 顶部标题 ============ */
+  .hero {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .hero .hero-emoji { font-size: 52px; line-height: 1; }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    color: #7c3aed;
+    margin: 6px 0 8px;
+    letter-spacing: 2px;
+    text-shadow: 0 3px 0 #fff;
+  }
+  .hero p {
+    font-size: clamp(15px, 2.4vw, 18px);
+    color: #64748b;
+  }
+  .hero p strong { color: #e11d48; }
+
+  /* ============ 核心法则：分类→加法 / 分步→乘法 ============ */
+  .rule-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .rule-item {
+    border-radius: 18px;
+    padding: 14px 18px;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(0,0,0,.10);
+    color: #fff;
+  }
+  .rule-item .big {
+    display: block;
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .rule-item .small { font-size: 14px; font-weight: 700; opacity: .96; }
+  .rule-item.add { background: linear-gradient(135deg, #fb923c, #f43f5e); }
+  .rule-item.mul  { background: linear-gradient(135deg, #22d3ee, #3b82f6); }
+
+  .rule-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 900;
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+  .scene.add .rule-tag { background: #f43f5e; }
+  .scene.mul  .rule-tag { background: #0ea5e9; }
+
+  /* ============ 场景卡片 ============ */
+  .scenes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 22px;
+    align-items: start;
+  }
+  .scene {
+    position: relative;
+    background: #fff;
+    border-radius: 26px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 10px 30px rgba(30, 41, 59, .12);
+    overflow: hidden;
+  }
+  .scene.add { border-top: 6px solid #fb923c; }
+  .scene.mul  { border-top: 6px solid #22d3ee; }
+
+  .scene-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .scene-head h2 {
+    font-size: clamp(19px, 2.8vw, 23px);
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+  .scene.add .scene-head h2 { color: #c2410c; }
+  .scene.mul  .scene-head h2 { color: #0e7490; }
+  .scene-head p {
+    font-size: 14.5px;
+    color: #64748b;
+  }
+  .scene-head p b { color: #e11d48; font-size: 1.15em; }
+
+  .reset-btn {
+    flex: 0 0 auto;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,.12); background: #fff; }
+  .reset-btn:active { transform: scale(.94); }
+
+  /* ============ 画板 ============ */
+  .board {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .board-svg { display: block; width: 100%; height: auto; }
+
+  /* 道路 */
+  .road {
+    fill: none;
+    stroke-width: 9;
+    stroke-linecap: round;
+    cursor: pointer;
+    opacity: .92;
+    transition: stroke-width .15s ease, opacity .15s ease, filter .15s ease;
+  }
+  .road:hover { stroke-width: 14; filter: drop-shadow(0 0 6px currentColor); }
+  .road.active {
+    stroke-width: 14;
+    opacity: 1;
+    animation: roadPulse 1s ease-in-out infinite;
+  }
+  @keyframes roadPulse {
+    0%, 100% { filter: drop-shadow(0 0 3px currentColor); }
+    50%      { filter: drop-shadow(0 0 12px currentColor); }
+  }
+
+  /* 数字徽章 */
+  .badge circle { fill: #fff; stroke-width: 3; }
+  .badge .badge-num {
+    fill: #334155;
+    font-weight: 800;
+    font-size: 15px;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* 锚点（家/超市/小姨家）与标注 */
+  .anchor { filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
+  .anchor-label { font-size: 16px; font-weight: 800; fill: #475569; text-anchor: middle; }
+  .door { fill: #fbbf24; stroke: #d97706; stroke-width: 2.5; }
+  .door-label { font-size: 15px; font-weight: 800; fill: #b45309; text-anchor: middle; }
+  .step-label { font-size: 15px; font-weight: 800; fill: #64748b; text-anchor: middle; }
+
+  /* 会走路的小人 */
+  .walker .walker-dot { fill: rgba(255,255,255,.55); stroke: #f59e0b; stroke-width: 2; }
+  .walker .walker-emoji {
+    font-size: 27px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bob 1s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+  }
+
+  /* ============ 提示气泡 ============ */
+  .status {
+    margin-top: 12px;
+    background: #fff7ed;
+    border: 2px dashed #fb923c;
+    border-radius: 16px;
+    padding: 10px 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #7c2d12;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scene.mul .status { background: #ecfeff; border-color: #22d3ee; color: #164e63; }
+  .status b { color: #e11d48; }
+  .status.shake { animation: shake .4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+
+  /* ============ 动态算式 ============ */
+  .formula { margin-top: 12px; text-align: center; }
+  .formula-note {
+    font-size: 16px;
+    font-weight: 800;
+    color: #334155;
+    margin-bottom: 8px;
+  }
+  .formula-note .hl { color: #e11d48; }
+  .eq {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+  .eq .num {
+    min-width: 54px;
+    height: 54px;
+    padding: 0 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  }
+  .eq .num.n1 { background: linear-gradient(135deg, #fb7185, #e11d48); }
+  .eq .num.n2 { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .eq .num.ans { background: linear-gradient(135deg, #fde047, #f59e0b); color: #92400e; }
+  .eq .op { font-size: 36px; font-weight: 900; color: #94a3b8; }
+
+  .eq .num.go { animation: numPop .55s cubic-bezier(.2, 1.4, .4, 1) both; }
+  @keyframes numPop {
+    0%   { transform: scale(.3); opacity: 0; }
+    60%  { transform: scale(1.25); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ============ 庆祝特效 ============ */
+  .celeb {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  .celeb.show { opacity: 1; }
+  .celeb .big {
+    font-size: clamp(40px, 7vw, 64px);
+    font-weight: 900;
+    color: #f97316;
+    -webkit-text-stroke: 2px #fff;
+    text-shadow: 0 4px 0 #f59e0b, 0 6px 16px rgba(0,0,0,.25);
+    animation: popBounce .7s cubic-bezier(.2, 1.5, .4, 1);
+    white-space: nowrap;
+  }
+  @keyframes popBounce {
+    0%   { transform: scale(.2); opacity: 0; }
+    60%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .cf {
+    position: absolute;
+    left: 50%;
+    top: 8%;
+    will-change: transform;
+    animation-name: cf;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+  }
+  @keyframes cf {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+    100% { transform: translate3d(var(--dx), var(--dy), 0) rotate(560deg); opacity: 0; }
+  }
+
+  /* ============ 扩展区：分类 + 分步 ============ */
+  .extend {
+    margin-top: 28px;
+    background: #fff;
+    border-radius: 26px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(30, 41, 59, .12);
+    border-top: 6px solid #f59e0b;
+  }
+  .extend > h2 {
+    text-align: center;
+    font-size: clamp(22px, 3.5vw, 30px);
+    color: #b45309;
+    margin-bottom: 6px;
+  }
+  .extend-intro {
+    text-align: center;
+    font-size: clamp(15px, 2.4vw, 18px);
+    color: #475569;
+    margin-bottom: 18px;
+  }
+  .extend-intro b { color: #e11d48; }
+
+  .ext-example {
+    background: #fffbeb;
+    border: 2px solid #fcd34d;
+    border-radius: 18px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .ext-example-title { font-size: 18px; font-weight: 900; color: #b45309; margin-bottom: 6px; }
+  .ext-example ul { margin: 8px 0 8px 20px; }
+  .ext-example li { font-size: 15.5px; color: #475569; margin-bottom: 4px; }
+  .ext-example li b { color: #e11d48; }
+  .ext-total {
+    margin-top: 8px;
+    font-size: 19px;
+    font-weight: 900;
+    color: #1e293b;
+    background: #fff;
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: inline-block;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.04);
+  }
+  .ext-total b { color: #e11d48; font-size: 1.2em; }
+
+  .builder-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .builder-head h3 { font-size: 20px; color: #1e293b; }
+  .add-btn {
+    border: none;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(249,115,22,.35);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(249,115,22,.45); }
+  .add-btn:active { transform: scale(.95); }
+
+  .builder-body { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .ext-svg { display: block; width: 100%; height: auto; }
+  .edge-label { font-weight: 800; font-size: 14px; paint-order: stroke; stroke: #fff; stroke-width: 4px; }
+
+  .wp-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 12px;
+  }
+  .wp-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: #f8fafc;
+  }
+  .wp-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .wp-name {
+    flex: 1;
+    min-width: 0;
+    border: 2px solid #fcd34d;
+    background: #fff;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+  }
+  .wp-name:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
+  .wp-del {
+    border: none;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: transform .1s ease, background .1s ease;
+    white-space: nowrap;
+  }
+  .wp-del:hover { background: #fecaca; }
+  .wp-del:active { transform: scale(.92); }
+
+  .wp-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .wp-leg { flex: 0 0 auto; }
+  .wp-leg-label { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 4px; white-space: nowrap; }
+  .wp-leg.warm .wp-leg-label { color: #ea580c; }
+  .wp-leg.cool .wp-leg-label { color: #0891b2; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    color: #fff;
+    transition: transform .1s ease;
+    line-height: 1;
+  }
+  .stepper button:active { transform: scale(.85); }
+  .stepper .s-minus { background: #94a3b8; }
+  .stepper .s-plus { background: #f59e0b; }
+  .stepper .s-val {
+    min-width: 26px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #1e293b;
+  }
+  .wp-result {
+    margin-left: auto;
+    text-align: right;
+    background: #fff;
+    border: 2px dashed #fbbf24;
+    border-radius: 12px;
+    padding: 6px 10px;
+  }
+  .wp-result-label { font-size: 11px; font-weight: 700; color: #94a3b8; }
+  .wp-result-val { font-size: 15px; font-weight: 800; color: #1e293b; white-space: nowrap; }
+  .wp-result-val b { color: #e11d48; font-size: 1.15em; }
+
+  .ext-live-formula {
+    margin-top: 16px;
+    text-align: center;
+    font-size: clamp(17px, 2.8vw, 22px);
+    font-weight: 800;
+    color: #475569;
+    background: #f1f5f9;
+    border-radius: 14px;
+    padding: 10px 14px;
+  }
+  .ext-live-formula .f { color: #7c3aed; font-weight: 900; }
+  .ext-live-total {
+    margin-top: 10px;
+    text-align: center;
+    font-size: clamp(20px, 3.4vw, 26px);
+    font-weight: 900;
+    color: #1e293b;
+  }
+  .ext-live-total b { color: #e11d48; font-size: 1.25em; }
+  .ext-tip {
+    margin-top: 16px;
+    background: #ecfdf5;
+    border: 2px dashed #34d399;
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 15.5px;
+    color: #065f46;
+  }
+  .ext-tip b { color: #059669; }
+
+  /* ============ 名侦探总结 ============ */
+  .summary {
+    margin-top: 28px;
+    background: #fff;
+    border-radius: 26px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(30, 41, 59, .12);
+    border-top: 6px solid #a855f7;
+  }
+  .summary h2 {
+    text-align: center;
+    font-size: clamp(22px, 3.5vw, 30px);
+    color: #7c3aed;
+    margin-bottom: 6px;
+  }
+  .summary .sub {
+    text-align: center;
+    font-size: clamp(15px, 2.4vw, 18px);
+    color: #475569;
+    margin-bottom: 18px;
+  }
+  .summary .sub strong { color: #e11d48; font-size: 1.1em; }
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .sum-card {
+    border-radius: 18px;
+    padding: 16px 18px;
+  }
+  .sum-card.add { background: #fff7ed; border: 2px solid #fdba74; }
+  .sum-card.mul { background: #ecfeff; border: 2px solid #67e8f9; }
+  .sum-title { font-size: 21px; font-weight: 900; margin-bottom: 8px; }
+  .sum-card.add .sum-title { color: #c2410c; }
+  .sum-card.mul  .sum-title { color: #0e7490; }
+  .sum-card p { font-size: 15.5px; color: #475569; }
+  .sum-card p b { color: #e11d48; }
+  .sum-example {
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e293b;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.04);
+  }
+  .sum-tag {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    display: inline-block;
+    border-radius: 999px;
+    padding: 5px 14px;
+  }
+  .sum-card.add .sum-tag { background: #fb923c; }
+  .sum-card.mul  .sum-tag { background: #06b6d4; }
+  .rhyme {
+    margin-top: 18px;
+    text-align: center;
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 900;
+    color: #7c3aed;
+  }
+
+  @media (max-width: 480px) {
+    .scene { padding: 14px 12px 16px; }
+    .eq .num { min-width: 46px; height: 46px; font-size: 25px; }
+    .eq .op { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 加法与乘法</span>
+</div>
+<div class="wrap">
+
+  <!-- ================= 标题 ================= -->
+  <header class="hero">
+    <div class="hero-emoji">🧮</div>
+    <h1>加法 vs 乘法 · 路径大冒险</h1>
+    <p>动动小手，帮小明走到超市，看看什么时候该<strong>加</strong>、什么时候该<strong>乘</strong>！</p>
+  </header>
+
+  <!-- ================= 核心法则：分类→加法 / 分步→乘法 ================= -->
+  <div class="rule-banner">
+    <div class="rule-item add">
+      <span class="big">🗂️ 分类 → 加法</span>
+      <span class="small">几类路「并排」都能到，选一类就够 → 加在一起</span>
+    </div>
+    <div class="rule-item mul">
+      <span class="big">🪜 分步 → 乘法</span>
+      <span class="small">路要「前后」一步一步走，缺一步都不行 → 乘在一起</span>
+    </div>
+  </div>
+
+  <div class="scenes">
+
+    <!-- ================= 场景一：加法原理 ================= -->
+    <section class="scene add" id="sceneAdd">
+      <div class="scene-head">
+        <div>
+          <h2>🏪 场景一：加法原理 · 直达终点 <span class="rule-tag">分类 → 加法</span></h2>
+          <p>从小明家去超市，路线<b>分成两类</b>：东门 <b>3</b> 条、西门 <b>4</b> 条。<b>每一条都能独立直达</b>！</p>
+        </div>
+        <button class="reset-btn" id="resetAdd">🔄 重新玩</button>
+      </div>
+
+      <div class="board">
+        <svg id="svgAdd" viewBox="0 0 700 320" class="board-svg" role="img" aria-label="加法原理路径图：从小明家到超市东门3条路，西门4条路">
+          <defs>
+            <linearGradient id="bgAdd" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fefce8"/>
+              <stop offset="1" stop-color="#ffe4e6"/>
+            </linearGradient>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M 0 1 L 10 6 L 0 11 z" fill="context-stroke"/>
+            </marker>
+          </defs>
+          <rect x="8" y="8" width="684" height="304" rx="22" fill="url(#bgAdd)"/>
+
+          <!-- 道路与徽章由 JS 生成 -->
+          <g id="roadsAdd"></g>
+          <g id="badgesAdd"></g>
+
+          <!-- 锚点 -->
+          <text class="anchor" x="70" y="150" font-size="54">🏠</text>
+          <text class="anchor-label" x="70" y="205">小明家</text>
+
+          <text class="anchor" x="646" y="150" font-size="60">🏪</text>
+          <text class="anchor-label" x="646" y="205">超市</text>
+
+          <!-- 东门 / 西门 -->
+          <circle class="door" cx="515" cy="90" r="10"/>
+          <text class="door-label" x="515" y="62">东门🚪</text>
+          <circle class="door" cx="515" cy="230" r="10"/>
+          <text class="door-label" x="515" y="266">西门🚪</text>
+
+          <!-- 会走路的小明 -->
+          <g id="walkerAdd" class="walker" opacity="0">
+            <circle class="walker-dot" r="15"/>
+            <text class="walker-emoji">🚶</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="status" id="statusAdd">👆 点任意一条路，看看「分类 → 加法」怎么算～</div>
+
+      <div class="formula">
+        <div class="formula-note">「分类」并排走：要么东门，要么西门，<span class="hl">选 1 条就够 → 用加法</span></div>
+        <div class="eq" id="eqAdd">
+          <span class="num n1">3</span><span class="op">+</span>
+          <span class="num n2">4</span><span class="op">=</span>
+          <span class="num ans">7</span>
+        </div>
+      </div>
+
+      <div class="celeb" id="celebAdd"><span class="big">🎉 太棒啦！</span></div>
+    </section>
+
+    <!-- ================= 场景二：乘法原理 ================= -->
+    <section class="scene mul" id="sceneMul">
+      <div class="scene-head">
+        <div>
+          <h2>🍎 场景二：乘法原理 · 中转分步 <span class="rule-tag">分步 → 乘法</span></h2>
+          <p>从小明家出发，路线<b>分成两步</b>：先到小姨家吃苹果（<b>3</b> 条路），再一起去超市（<b>2</b> 条路）。<b>一步都不能少</b>！</p>
+        </div>
+        <button class="reset-btn" id="resetMul">🔄 重新玩</button>
+      </div>
+
+      <div class="board">
+        <svg id="svgMul" viewBox="0 0 720 300" class="board-svg" role="img" aria-label="乘法原理路径图：先家到小姨家3条路，再小姨家到超市2条路">
+          <defs>
+            <linearGradient id="bgMul" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f0fdfa"/>
+              <stop offset="1" stop-color="#e0f2fe"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="8" width="704" height="284" rx="22" fill="url(#bgMul)"/>
+
+          <g id="roadsMul"></g>
+          <g id="badgesMul"></g>
+
+          <!-- 锚点 -->
+          <text class="anchor" x="70" y="150" font-size="52">🏠</text>
+          <text class="anchor-label" x="70" y="204">小明家</text>
+
+          <text class="anchor" x="360" y="150" font-size="54">👩‍🦰</text>
+          <text class="anchor-label" x="360" y="204">小姨家🍎</text>
+
+          <text class="anchor" x="655" y="150" font-size="56">🏪</text>
+          <text class="anchor-label" x="655" y="204">超市</text>
+
+          <!-- 分步提示 -->
+          <text class="step-label" x="222" y="26">第一步：家 → 小姨家</text>
+          <text class="step-label" x="505" y="26">第二步：小姨家 → 超市</text>
+
+          <g id="walkerMul" class="walker" opacity="0">
+            <circle class="walker-dot" r="15"/>
+            <text class="walker-emoji">🚶</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="status" id="statusMul">👆 先点『第一步』，再点『第二步』，体会「分步 → 乘法」～</div>
+
+      <div class="formula">
+        <div class="formula-note">「分步」前后走：先到小姨家，再到超市，<span class="hl">两步都要走 → 用乘法</span></div>
+        <div class="eq" id="eqMul">
+          <span class="num n1">3</span><span class="op">×</span>
+          <span class="num n2">2</span><span class="op">=</span>
+          <span class="num ans">6</span>
+        </div>
+      </div>
+
+      <div class="celeb" id="celebMul"><span class="big">🎉 太棒啦！</span></div>
+    </section>
+  </div>
+
+  <!-- ================= 扩展区：分类 + 分步 一起用 ================= -->
+  <section class="extend">
+    <h2>🚀 扩展区：分类 + 分步 一起用</h2>
+    <p class="extend-intro">
+      去超市的路先<b>分类</b>（经加油站 / 经小姨家…），每一类里面又要<b>分两步</b>走。
+      所以规律是：<b>每一类先乘（分步），几类再加起来（分类）</b>。
+    </p>
+
+    <!-- 例题 -->
+    <div class="ext-example">
+      <div class="ext-example-title">📌 例题：从家去超市，有两种走法</div>
+      <ul>
+        <li>经 <b>加油站</b>：家→加油站 <b>4</b> 条路，加油站→超市 <b>3</b> 条路 → <b>4 × 3 = 12</b> 条</li>
+        <li>经 <b>小姨家</b>：家→小姨家 <b>3</b> 条路，小姨家→超市 <b>2</b> 条路 → <b>3 × 2 = 6</b> 条</li>
+      </ul>
+      <div class="ext-total">总路数 = 4×3 + 3×2 = <b>18</b> 条</div>
+    </div>
+
+    <!-- 可增删中转站、改路线数的互动构建器 -->
+    <div class="builder">
+      <div class="builder-head">
+        <h3>🧩 自己动手：加 / 减中转站，改路线数</h3>
+        <button class="add-btn" id="addWp">＋ 添加中转站</button>
+      </div>
+
+      <div class="builder-body">
+        <div class="ext-diagram" id="extDiagram"></div>
+        <div class="wp-list" id="wpList"></div>
+      </div>
+
+      <div class="ext-live-formula" id="extFormula"></div>
+      <div class="ext-live-total" id="extTotal"></div>
+    </div>
+
+    <div class="ext-tip">💡 口诀：<b>每一类 = 两条路相乘（分步）</b>，<b>几类并排 = 加在一起（分类）</b>。</div>
+  </section>
+
+  <!-- ================= 名侦探总结 ================= -->
+  <section class="summary">
+    <h2>🕵️ 名侦探总结</h2>
+    <p class="sub">记住这条黄金法则：<strong>「分类」就用加法，「分步」就用乘法！</strong></p>
+    <div class="summary-cards">
+      <div class="sum-card add">
+        <div class="sum-title">➕ 加法原理（分类）</div>
+        <p>路线<b>分成几类</b>，每一条<b>都能自己走到终点</b>，是「<b>要么…要么…</b>」的并排关系 → <b>加</b>。</p>
+        <div class="sum-example">东门 3 条路 ＋ 西门 4 条路 → 3 + 4 = 7</div>
+        <div class="sum-tag">🗂️ 分类（并排）→ 加法</div>
+      </div>
+      <div class="sum-card mul">
+        <div class="sum-title">✖️ 乘法原理（分步）</div>
+        <p>必须<b>先走第一步，再走第二步</b>，一步都不能少，是「<b>先…再…</b>」的前后关系 → <b>乘</b>。</p>
+        <div class="sum-example">家→小姨 3 条路 × 小姨→超市 2 条路 → 3 × 2 = 6</div>
+        <div class="sum-tag">🪜 分步（前后）→ 乘法</div>
+      </div>
+    </div>
+    <div class="rhyme">🎵 分类并排用加法，分步前后用乘法！</div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+
+  /* ============ 小工具 ============ */
+  function el(id) { return document.getElementById(id); }
+
+  // 创建一条可点击的路
+  function makePath(parent, d, color) {
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", d);
+    p.setAttribute("class", "road");
+    p.setAttribute("style", "color:" + color + ";stroke:" + color);
+    p.setAttribute("marker-end", "url(#arrow)");
+    parent.appendChild(p);
+    return p;
+  }
+
+  // 在路中间放一个编号徽章 ①②③④...
+  function makeBadge(parent, pathEl, color, num) {
+    var mid = pathEl.getPointAtLength(pathEl.getTotalLength() / 2);
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "badge");
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("r", "13");
+    c.setAttribute("fill", "#fff");
+    c.setAttribute("stroke", color);
+    c.setAttribute("stroke-width", "3");
+    var t = document.createElementNS(NS, "text");
+    t.setAttribute("class", "badge-num");
+    t.textContent = num;
+    g.appendChild(c);
+    g.appendChild(t);
+    g.setAttribute("transform", "translate(" + mid.x + " " + mid.y + ")");
+    parent.appendChild(g);
+  }
+
+  // 让小明沿着某条路从起点走到终点
+  function animateWalker(scene, pathEl, onDone) {
+    var w = scene.walker;
+    var len = pathEl.getTotalLength();
+    var t0 = performance.now();
+    var dur = 900;
+    w.setAttribute("opacity", "1");
+    function step(now) {
+      var t = Math.min(1, (now - t0) / dur);
+      var e = t * t * (3 - 2 * t); // 平滑起步、平稳停下
+      var pt = pathEl.getPointAtLength(e * len);
+      w.setAttribute("transform", "translate(" + pt.x + " " + pt.y + ")");
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else if (onDone) {
+        onDone();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function hideWalker(scene) {
+    scene.walker.setAttribute("opacity", "0");
+    scene.walker.removeAttribute("transform");
+  }
+
+  function setStatus(scene, html) { scene.status.innerHTML = html; }
+
+  function shakeStatus(scene) {
+    scene.status.classList.remove("shake");
+    void scene.status.offsetWidth; // 强制回流，重触发动画
+    scene.status.classList.add("shake");
+  }
+
+  function resetFormula(scene) {
+    scene.eq.querySelectorAll(".num").forEach(function (n) { n.classList.remove("go"); });
+  }
+
+  // 让算式里的数字“蹦”出来
+  function popFormula(scene) {
+    var nums = scene.eq.querySelectorAll(".num");
+    nums.forEach(function (n, i) {
+      n.classList.remove("go");
+      void n.offsetWidth;
+      n.style.animationDelay = (i * 150) + "ms";
+      n.classList.add("go");
+    });
+  }
+
+  // 庆祝：弹字 + 撒花
+  function celebrate(scene) {
+    scene.celeb.classList.add("show");
+    spawnConfetti(scene.celeb);
+    setTimeout(function () { scene.celeb.classList.remove("show"); }, 2600);
+  }
+  function spawnConfetti(container) {
+    var emojis = ["🎉", "⭐", "✨", "🍬", "🎈", "🌟", "🧁"];
+    for (var i = 0; i < 26; i++) {
+      var s = document.createElement("span");
+      s.className = "cf";
+      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      s.style.left = "50%";
+      s.style.top = "8%";
+      s.style.setProperty("--dx", (Math.random() * 160 - 80) + "px");
+      s.style.setProperty("--dy", (Math.random() * 160 + 340) + "px");
+      s.style.fontSize = (18 + Math.random() * 18) + "px";
+      s.style.animationDelay = (Math.random() * 300) + "ms";
+      s.style.animationDuration = (1500 + Math.random() * 800) + "ms";
+      container.appendChild(s);
+    }
+    setTimeout(function () {
+      container.querySelectorAll(".cf").forEach(function (e) { e.remove(); });
+    }, 3300);
+  }
+
+  /* ============ 场景一：加法原理 ============ */
+  var s1 = {
+    walker: el("walkerAdd"),
+    status: el("statusAdd"),
+    eq: el("eqAdd"),
+    celeb: el("celebAdd"),
+    flying: false
+  };
+  var roads1 = [];
+
+  function buildScene1() {
+    // 东门 3 条路（暖色系）
+    var east = [
+      { d: "M 95 160 Q 275 62 515 90",  color: "#f43f5e" },
+      { d: "M 95 160 Q 300 116 515 90", color: "#f97316" },
+      { d: "M 95 160 Q 325 170 515 90", color: "#f59e0b" }
+    ];
+    // 西门 4 条路（冷色系）
+    var west = [
+      { d: "M 95 160 Q 285 150 515 230", color: "#10b981" },
+      { d: "M 95 160 Q 308 200 515 230", color: "#06b6d4" },
+      { d: "M 95 160 Q 330 250 515 230", color: "#3b82f6" },
+      { d: "M 95 160 Q 350 300 515 230", color: "#8b5cf6" }
+    ];
+    var roadsG = el("roadsAdd");
+    var badgesG = el("badgesAdd");
+    east.forEach(function (r, i) {
+      var p = makePath(roadsG, r.d, r.color);
+      p.setAttribute("data-leg", "east");
+      p.setAttribute("data-idx", i);
+      p.addEventListener("click", onRoad1);
+      roads1.push(p);
+      makeBadge(badgesG, p, r.color, i + 1);
+    });
+    west.forEach(function (r, i) {
+      var p = makePath(roadsG, r.d, r.color);
+      p.setAttribute("data-leg", "west");
+      p.setAttribute("data-idx", i);
+      p.addEventListener("click", onRoad1);
+      roads1.push(p);
+      makeBadge(badgesG, p, r.color, i + 1);
+    });
+  }
+
+  function resetScene1() {
+    roads1.forEach(function (p) { p.classList.remove("active"); });
+    hideWalker(s1);
+    resetFormula(s1);
+    setStatus(s1, "👆 点任意一条路，看看「分类 → 加法」怎么算～");
+  }
+
+  function onRoad1(e) {
+    if (s1.flying) { return; }
+    var p = e.currentTarget;
+    s1.flying = true;
+    roads1.forEach(function (r) { r.classList.remove("active"); });
+    hideWalker(s1);
+    resetFormula(s1);
+    p.classList.add("active");
+
+    var leg = p.getAttribute("data-leg");
+    var idx = (+p.getAttribute("data-idx")) + 1;
+    var gate = leg === "east" ? "东门" : "西门";
+
+    animateWalker(s1, p, function () {
+      setStatus(s1, "🚶 小明走第 <b>" + idx + "</b> 条路，到达【" + gate + "】啦！两类路并排，选一条就够 → <b>分类用加法</b>！");
+      popFormula(s1);
+      celebrate(s1);
+      s1.flying = false;
+    });
+  }
+
+  /* ============ 场景二：乘法原理 ============ */
+  var s2 = {
+    walker: el("walkerMul"),
+    status: el("statusMul"),
+    eq: el("eqMul"),
+    celeb: el("celebMul"),
+    flying: false,
+    first: null,
+    second: null,
+    done: false
+  };
+  var roads2First = [];
+  var roads2Second = [];
+
+  function buildScene2() {
+    // 第一步：家 → 小姨家，3 条路（暖色系）
+    var leg1 = [
+      { d: "M 110 150 Q 222 60 335 150",  color: "#f43f5e" },
+      { d: "M 110 150 Q 222 150 335 150", color: "#f97316" },
+      { d: "M 110 150 Q 222 240 335 150", color: "#f59e0b" }
+    ];
+    // 第二步：小姨家 → 超市，2 条路（冷色系）
+    var leg2 = [
+      { d: "M 385 150 Q 505 90 625 150",  color: "#10b981" },
+      { d: "M 385 150 Q 505 210 625 150", color: "#3b82f6" }
+    ];
+    var roadsG = el("roadsMul");
+    var badgesG = el("badgesMul");
+    leg1.forEach(function (r, i) {
+      var p = makePath(roadsG, r.d, r.color);
+      p.setAttribute("data-leg", "first");
+      p.setAttribute("data-idx", i);
+      p.addEventListener("click", onRoad2);
+      roads2First.push(p);
+      makeBadge(badgesG, p, r.color, i + 1);
+    });
+    leg2.forEach(function (r, i) {
+      var p = makePath(roadsG, r.d, r.color);
+      p.setAttribute("data-leg", "second");
+      p.setAttribute("data-idx", i);
+      p.addEventListener("click", onRoad2);
+      roads2Second.push(p);
+      makeBadge(badgesG, p, r.color, i + 1);
+    });
+  }
+
+  function resetScene2Attempt() {
+    roads2First.concat(roads2Second).forEach(function (p) { p.classList.remove("active"); });
+    s2.first = null;
+    s2.second = null;
+    s2.done = false;
+    hideWalker(s2);
+    resetFormula(s2);
+  }
+
+  function resetScene2() {
+    resetScene2Attempt();
+    setStatus(s2, "👆 先点『第一步』，再点『第二步』，体会「分步 → 乘法」～");
+  }
+
+  // 两步都选好后，手拉手连通
+  function completeScene2() {
+    s2.flying = true;
+    var firstPath = roads2First[s2.first];
+    var secondPath = roads2Second[s2.second];
+    animateWalker(s2, firstPath, function () {
+      animateWalker(s2, secondPath, function () {
+        setStatus(s2, "🎉 先到小姨家吃苹果，再一起去超市——<b>分步用乘法</b>，两步都要走！");
+        popFormula(s2);
+        celebrate(s2);
+        s2.done = true;
+        s2.flying = false;
+      });
+    });
+  }
+
+  function onRoad2(e) {
+    if (s2.flying) { return; }
+    var p = e.currentTarget;
+    var leg = p.getAttribute("data-leg");
+
+    // 上次完成后再点击 → 开启全新的一局
+    if (s2.done) {
+      resetScene2Attempt();
+      setStatus(s2, "👆 再试一次：先点『第一步』（家 → 小姨家）的路～");
+    }
+
+    if (leg === "first") {
+      if (s2.first != null) { roads2First[s2.first].classList.remove("active"); }
+      s2.first = +p.getAttribute("data-idx");
+      p.classList.add("active");
+      setStatus(s2, "✅ 第一步选好啦！现在点『第二步』（小姨家 → 超市）的路～");
+      if (s2.second != null) { completeScene2(); }
+    } else {
+      // 没选第一步就想走第二步 → 提示按顺序来
+      if (s2.first == null) {
+        setStatus(s2, "🙅 要按顺序来哦：先点『第一步』（家 → 小姨家）的路！");
+        shakeStatus(s2);
+        return;
+      }
+      if (s2.second != null) { roads2Second[s2.second].classList.remove("active"); }
+      s2.second = +p.getAttribute("data-idx");
+      p.classList.add("active");
+      completeScene2();
+    }
+  }
+
+  /* ============ 扩展区：分类 + 分步 ============ */
+  var extData = [
+    { name: "加油站", a: 4, b: 3 },
+    { name: "小姨家", a: 3, b: 2 }
+  ];
+  var wpSeq = extData.length;
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function extTotal() {
+    return extData.reduce(function (s, w) { return s + w.a * w.b; }, 0);
+  }
+
+  // 站点卡片列表（仅在增/删时重建，避免打字丢焦点）
+  function renderWpList() {
+    var list = el("wpList");
+    list.innerHTML = "";
+    extData.forEach(function (w, i) {
+      var card = document.createElement("div");
+      card.className = "wp-card";
+      card.innerHTML =
+        '<div class="wp-top">' +
+          '<input class="wp-name" value="' + escapeHtml(w.name) + '" maxlength="6" placeholder="站点名">' +
+          '<button class="wp-del" title="删除这个中转站">🗑️ 删除</button>' +
+        '</div>' +
+        '<div class="wp-row">' +
+          '<div class="wp-leg warm">' +
+            '<div class="wp-leg-label">家 → 站点</div>' +
+            '<div class="stepper">' +
+              '<button class="s-minus">−</button><span class="s-val">' + w.a + '</span><button class="s-plus">＋</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="wp-leg cool">' +
+            '<div class="wp-leg-label">站点 → 超市</div>' +
+            '<div class="stepper">' +
+              '<button class="s-minus">−</button><span class="s-val">' + w.b + '</span><button class="s-plus">＋</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="wp-result">' +
+            '<div class="wp-result-label">这一类小计</div>' +
+            '<div class="wp-result-val">' + w.a + '×' + w.b + '=<b>' + (w.a * w.b) + '</b> 条</div>' +
+          '</div>' +
+        '</div>';
+      list.appendChild(card);
+
+      card.querySelector(".wp-name").addEventListener("input", function (e) {
+        extData[i].name = e.target.value.trim() || ("站点" + (i + 1));
+        updateDiagram();
+      });
+      bindStepper(card.querySelectorAll(".stepper")[0], function (v) {
+        extData[i].a = v;
+        refreshExt();
+      });
+      bindStepper(card.querySelectorAll(".stepper")[1], function (v) {
+        extData[i].b = v;
+        refreshExt();
+      });
+      card.querySelector(".wp-del").addEventListener("click", function () {
+        extData.splice(i, 1);
+        renderWpList();
+        updateDiagram();
+        updateFormula();
+      });
+    });
+  }
+
+  function bindStepper(stepEl, onChange) {
+    var valEl = stepEl.querySelector(".s-val");
+    var getVal = function () { return parseInt(valEl.textContent, 10) || 1; };
+    stepEl.querySelector(".s-minus").addEventListener("click", function () {
+      var v = Math.max(1, getVal() - 1);
+      valEl.textContent = v;
+      onChange(v);
+    });
+    stepEl.querySelector(".s-plus").addEventListener("click", function () {
+      var v = Math.min(9, getVal() + 1);
+      valEl.textContent = v;
+      onChange(v);
+    });
+  }
+
+  // 刷新：小计 + 示意图 + 总式（不重建输入框，保护焦点）
+  function refreshExt() {
+    var cards = el("wpList").querySelectorAll(".wp-card");
+    extData.forEach(function (w, i) {
+      if (cards[i]) {
+        cards[i].querySelector(".wp-result-val").innerHTML = w.a + "×" + w.b + "=<b>" + (w.a * w.b) + "</b> 条";
+      }
+    });
+    updateDiagram();
+    updateFormula();
+  }
+
+  // 在两点之间画 N 条「扇形」路线：每条路都是独立一条线，靠得近、两端汇聚到站点
+  function bundleLeg(x1, y1, x2, y2, n, color, labelColor) {
+    var dx = x2 - x1, dy = y2 - y1;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var px = -dy / len, py = dx / len;           // 垂直方向单位向量
+    var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;  // 中点
+    var gap = n > 1 ? Math.min(14, 42 / (n - 1)) : 0; // 相邻线间距，线多了自动收紧
+    var k0 = (n - 1) / 2;
+    var s = "";
+    for (var k = 0; k < n; k++) {
+      var o = (k - k0) * gap;
+      var cx = mx + px * o, cy = my + py * o;
+      s += '<path d="M ' + x1 + ' ' + y1 + ' Q ' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + x2 + ' ' + y2 + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round"/>';
+    }
+    // 计数小标签，放在线束外侧（白描边，盖在线附近也看得清）
+    var lo = (k0 + 1.2) * gap;
+    var lx = mx + px * lo, ly = my + py * lo;
+    s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" class="edge-label" fill="' + labelColor + '" text-anchor="middle">' + n + ' 条</text>';
+    return s;
+  }
+
+  // 画「家 → 中转站 → 超市」示意图
+  function updateDiagram() {
+    var n = extData.length;
+    var W = 720;
+    var dy = 110;
+    var H = Math.max(230, 60 + n * dy);
+    var homeX = 80, marketX = 640, wpX = 360;
+    var cy = H / 2;
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="ext-svg" role="img" aria-label="扩展区路径示意图">';
+
+    // 固定起点和终点
+    s += '<text x="' + homeX + '" y="' + (cy - 42) + '" font-size="46" text-anchor="middle">🏠</text>';
+    s += '<text x="' + homeX + '" y="' + (cy + 34) + '" font-size="15" font-weight="800" fill="#475569" text-anchor="middle">家</text>';
+    s += '<text x="' + marketX + '" y="' + (cy - 42) + '" font-size="46" text-anchor="middle">🏪</text>';
+    s += '<text x="' + marketX + '" y="' + (cy + 34) + '" font-size="15" font-weight="800" fill="#475569" text-anchor="middle">超市</text>';
+
+    if (n === 0) {
+      s += '<text x="' + (W / 2) + '" y="' + cy + '" font-size="16" fill="#94a3b8" text-anchor="middle">还没有中转站，点「＋ 添加中转站」加一个吧～</text>';
+    }
+
+    for (var i = 0; i < n; i++) {
+      var w = extData[i];
+      var y = cy + (i - (n - 1) / 2) * dy;
+      var x1 = homeX + 30, x2 = wpX - 26;
+      // 家 → 中转站（暖色，第一步）：有几条就画几条线
+      s += bundleLeg(x1, cy, x2, y, w.a, "#f97316", "#ea580c");
+      // 中转站 → 超市（冷色，第二步）：有几条就画几条线
+      var x3 = wpX + 26, x4 = marketX - 30;
+      s += bundleLeg(x3, y, x4, cy, w.b, "#06b6d4", "#0891b2");
+      // 中转站节点
+      s += '<circle cx="' + wpX + '" cy="' + y + '" r="26" fill="#fff" stroke="#f59e0b" stroke-width="3.5"/>';
+      var name = w.name.length > 4 ? w.name.slice(0, 4) : w.name;
+      s += '<text x="' + wpX + '" y="' + y + '" font-size="14" font-weight="800" fill="#b45309" text-anchor="middle" dominant-baseline="central">' + escapeHtml(name) + '</text>';
+      s += '<text x="' + wpX + '" y="' + (y + 48) + '" font-size="13" font-weight="800" fill="#7c2d12" text-anchor="middle">' + w.a + '×' + w.b + '=' + (w.a * w.b) + ' 条</text>';
+    }
+    s += '</svg>';
+    el("extDiagram").innerHTML = s;
+  }
+
+  function updateFormula() {
+    var parts = extData.map(function (w) { return w.a + "×" + w.b; });
+    var total = extTotal();
+    el("extFormula").innerHTML = '算式：<span class="f">' + (parts.length ? parts.join(" + ") : "0") + ' = ' + total + '</span> 条';
+    el("extTotal").innerHTML = '总路数 = <b>' + total + '</b> 条';
+  }
+
+  function initExt() {
+    renderWpList();
+    updateDiagram();
+    updateFormula();
+    el("addWp").addEventListener("click", function () {
+      wpSeq += 1;
+      extData.push({ name: "中转站" + wpSeq, a: 1, b: 1 });
+      renderWpList();
+      updateDiagram();
+      updateFormula();
+    });
+  }
+
+  /* ============ 启动 ============ */
+  function init() {
+    buildScene1();
+    buildScene2();
+    resetScene1();
+    resetScene2();
+    initExt();
+    el("resetAdd").addEventListener("click", resetScene1);
+    el("resetMul").addEventListener("click", resetScene2);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>九九乘法表大冒险</title>
+<style>
+  /* ============ 基础与配色（马卡龙糖果色系） ============ */
+  :root{
+    --pink:#ff9cc9;   --pink-soft:#ffe3f0;
+    --mint:#6fd6ab;   --mint-soft:#e0f7ec;
+    --sky:#6ec6ff;    --sky-soft:#e0f2ff;
+    --peach:#ffab76;  --peach-soft:#ffedd9;
+    --lav:#a78bfa;    --lav-soft:#efe9ff;
+    --lemon:#ffd54f;  --lemon-soft:#fff7d6;
+    --ink:#4a4a5a;
+    --muted:#8b8b9e;
+    --card:#ffffff;
+    --bg:linear-gradient(160deg,#ffe3f0 0%,#e0f7ec 40%,#e0f2ff 100%);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    min-height:100vh;
+    background-attachment:fixed;
+    display:flex;
+    justify-content:center;
+    -webkit-text-size-adjust:100%;
+  }
+  button{ font-family:inherit; touch-action:manipulation; cursor:pointer; }
+  [hidden]{ display:none !important; }
+
+  .app{
+    width:100%;
+    max-width:600px;
+    padding:18px 14px 40px;
+    margin:0 auto;
+  }
+
+  /* ============ 顶部标题 ============ */
+  .header{ text-align:center; margin-bottom:14px; }
+  .title{
+    font-size:clamp(1.7rem,6vw,2.4rem);
+    font-weight:900;
+    margin:0 0 4px;
+    letter-spacing:1px;
+  }
+  .subtitle{ margin:0 0 12px; color:var(--muted); font-size:.95rem; }
+  .best-bar{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .best-chip{
+    background:rgba(255,255,255,.9);
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:.9rem;
+    box-shadow:0 3px 10px rgba(0,0,0,.06);
+  }
+  .best-chip b{ color:#e0559b; }
+
+  /* ============ 模式切换导航 ============ */
+  .tabs{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .tab{
+    border:none;
+    border-radius:18px;
+    padding:12px 6px;
+    font-size:1rem;
+    font-weight:800;
+    color:var(--muted);
+    background:rgba(255,255,255,.85);
+    box-shadow:0 4px 14px rgba(0,0,0,.07);
+    transition:transform .12s, box-shadow .12s;
+    line-height:1.3;
+  }
+  .tab small{ display:block; font-weight:500; font-size:.72rem; color:var(--muted); margin-top:3px; }
+  .tab:active{ transform:scale(.97); }
+  .tab.active{ background:linear-gradient(135deg,#ff9cc9,#a78bfa); color:#fff; box-shadow:0 8px 20px rgba(255,156,201,.45); }
+  .tab.active small{ color:#fff; }
+
+  /* ============ 学一学（乘法表） ============ */
+  .learn-title{ margin:0 0 4px; font-size:1.45rem; color:#7b5bf0; text-align:center; }
+  .learn-sub{ margin:18px 0 8px; font-size:1.15rem; color:#e0559b; }
+  .learn-sub small{ display:block; font-size:.8rem; color:var(--muted); font-weight:500; margin-top:2px; }
+  .learn-note{ margin:0 0 8px; font-size:.85rem; color:#a9800a; background:var(--lemon-soft); border-radius:12px; padding:8px 12px; line-height:1.5; }
+
+  .fwd-row{ display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; }
+  .fwd-row-head{ flex:0 0 auto; font-weight:900; border-radius:12px; padding:6px 12px; color:#fff; font-size:.92rem; box-shadow:0 3px 8px rgba(0,0,0,.08); background:var(--cc); }
+  .fwd-row-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .fwd-chip{ padding:5px 9px; border-radius:10px; font-weight:700; font-size:.85rem; background:var(--cc-soft); color:var(--cc-ink); }
+
+  .c1{ --cc:#ff9cc9; --cc-soft:#ffe3f0; --cc-ink:#e0559b; }
+  .c2{ --cc:#6fd6ab; --cc-soft:#e0f7ec; --cc-ink:#1fa67a; }
+  .c3{ --cc:#6ec6ff; --cc-soft:#e0f2ff; --cc-ink:#1c86d6; }
+  .c4{ --cc:#ffab76; --cc-soft:#ffedd9; --cc-ink:#e07722; }
+  .c5{ --cc:#a78bfa; --cc-soft:#efe9ff; --cc-ink:#7b5bf0; }
+  .c6{ --cc:#f4c430; --cc-soft:#fff7d6; --cc-ink:#a9800a; }
+  .c7{ --cc:#ff9cc9; --cc-soft:#ffe3f0; --cc-ink:#e0559b; }
+  .c8{ --cc:#6fd6ab; --cc-soft:#e0f7ec; --cc-ink:#1fa67a; }
+  .c9{ --cc:#6ec6ff; --cc-soft:#e0f2ff; --cc-ink:#1c86d6; }
+
+  .rev-table{ display:grid; grid-template-columns:repeat(auto-fill,minmax(116px,1fr)); gap:10px; }
+  .rev-card{
+    background:#fafafc;
+    border-radius:14px;
+    padding:10px 8px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    border:2px solid transparent;
+  }
+  .rev-card.multi{ background:var(--lemon-soft); border-color:#ffd54f; }
+  .rev-prod{ font-size:1.55rem; font-weight:900; color:#7b5bf0; line-height:1.1; }
+  .rev-eq{ font-size:.84rem; font-weight:700; color:var(--ink); margin-top:3px; }
+  .rev-badge{
+    display:inline-block; margin-top:5px;
+    background:#ffd54f; color:#a9800a;
+    font-size:.68rem; font-weight:900;
+    border-radius:999px; padding:2px 9px;
+  }
+
+  /* ============ 主卡片 ============ */
+  .card{
+    background:var(--card);
+    border-radius:26px;
+    padding:20px 16px 22px;
+    box-shadow:0 14px 40px rgba(90,80,140,.14);
+  }
+  .topbar{ display:flex; justify-content:space-between; align-items:center; font-size:1rem; }
+  .topbar .progress b{ font-size:1.35rem; color:#7b5bf0; }
+  .timer{ background:var(--lav-soft); color:#7b5bf0; border-radius:999px; padding:6px 14px; font-weight:700; }
+  .progressbar{ height:10px; background:#f0eef7; border-radius:999px; margin:12px 0 6px; overflow:hidden; }
+  .progressbar > div{
+    height:100%; width:0;
+    background:linear-gradient(90deg,#ff9cc9,#a78bfa,#6ec6ff);
+    border-radius:999px; transition:width .3s ease;
+  }
+
+  /* ============ 题目区 ============ */
+  .question{
+    min-height:120px;
+    display:flex; align-items:center; justify-content:center;
+    gap:10px;
+    margin:8px 0 4px;
+    user-select:none;
+  }
+  .q-forward, .q-reverse{
+    display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  }
+  .factor, .prod, .op{
+    font-size:clamp(2.2rem,9vw,3.6rem);
+    font-weight:900;
+  }
+  .factor{ color:#1c86d6; }
+  .prod{ color:#e07722; }
+  .op{ color:var(--muted); }
+  .answer-box{
+    min-width:1.6em;
+    padding:4px 10px;
+    text-align:center;
+    font-size:clamp(2.2rem,9vw,3.6rem);
+    font-weight:900;
+    color:#e0559b;
+    background:var(--pink-soft);
+    border-radius:16px;
+    border:3px dashed #ff9cc9;
+    line-height:1.2;
+  }
+  .answer-box.empty{ color:#f3a8cc; }
+
+  /* 反向练习：两个因数输入格 */
+  .slot{
+    min-width:1.5em;
+    padding:4px 8px;
+    text-align:center;
+    font-size:clamp(2.2rem,9vw,3.6rem);
+    font-weight:900;
+    color:var(--muted);
+    background:#f4f4fb;
+    border:3px solid #d9d9ea;
+    border-radius:16px;
+    line-height:1.2;
+    transition:all .15s;
+  }
+  .slot.active{
+    background:var(--mint-soft);
+    border-color:var(--mint);
+    color:#1fa67a;
+    box-shadow:0 0 0 4px rgba(111,214,171,.25);
+    animation:pulse 1.2s infinite;
+  }
+  .slot.filled{ color:#1fa67a; }
+
+  .reverse-hint{
+    text-align:center;
+    font-size:.95rem;
+    color:#e07722;
+    background:var(--peach-soft);
+    border-radius:14px;
+    padding:9px 12px;
+    margin:6px 0 2px;
+    line-height:1.5;
+  }
+  .reverse-hint .hint-chip{
+    display:inline-block;
+    background:#fff;
+    border:2px solid #ffd1a9;
+    border-radius:10px;
+    padding:2px 9px;
+    margin:2px 3px;
+    font-weight:800;
+    color:#e07722;
+  }
+  .reverse-tip{
+    text-align:center;
+    font-size:.82rem;
+    color:var(--muted);
+    margin:4px 0 2px;
+  }
+
+  /* ============ 虚拟键盘 ============ */
+  .keypad{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:16px;
+  }
+  .key{
+    min-height:60px;
+    border:none;
+    border-radius:16px;
+    font-size:1.7rem;
+    font-weight:900;
+    color:#fff;
+    box-shadow:0 5px 0 rgba(0,0,0,.12), 0 6px 14px rgba(0,0,0,.08);
+    transition:transform .08s, box-shadow .08s;
+    user-select:none;
+  }
+  .key:active{ transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08); }
+  /* 数字键：马卡龙多彩 */
+  .key[data-d="1"]{ background:#ff9cc9; }
+  .key[data-d="2"]{ background:#6fd6ab; }
+  .key[data-d="3"]{ background:#6ec6ff; }
+  .key[data-d="4"]{ background:#ffab76; }
+  .key[data-d="5"]{ background:#a78bfa; }
+  .key[data-d="6"]{ background:#ffd54f; color:#a9800a; }
+  .key[data-d="7"]{ background:#ff9cc9; }
+  .key[data-d="8"]{ background:#6fd6ab; }
+  .key[data-d="9"]{ background:#6ec6ff; }
+  .key[data-d="0"]{ background:#c7c9ef; }
+  /* 清除 / 下一题 */
+  .key-clear{ background:#e3e3ef; color:var(--muted); font-size:1.15rem; }
+  .key-next{
+    background:linear-gradient(135deg,#ff9cc9,#a78bfa);
+    font-size:1.15rem;
+    box-shadow:0 5px 0 rgba(122,91,240,.35), 0 6px 14px rgba(0,0,0,.1);
+  }
+  .key-next:active{ box-shadow:0 1px 0 rgba(122,91,240,.35); }
+
+  .footer{ text-align:center; color:var(--muted); font-size:.85rem; margin-top:16px; }
+
+  /* ============ 提示 toast ============ */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:30px;
+    transform:translate(-50%,20px);
+    background:rgba(74,74,90,.92);
+    color:#fff;
+    padding:12px 20px;
+    border-radius:999px;
+    font-size:1rem;
+    font-weight:700;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    z-index:60;
+    max-width:90vw;
+    text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  /* ============ 覆盖层（结算 / 恭喜） ============ */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(60,50,90,.5);
+    display:flex; align-items:center; justify-content:center;
+    padding:18px;
+    z-index:50;
+    overflow:auto;
+  }
+  .report-card{
+    background:#fff;
+    border-radius:26px;
+    padding:24px 20px;
+    max-width:560px; width:100%;
+    max-height:92vh; overflow:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+  }
+  .report-card h2{ margin:0 0 6px; font-size:1.5rem; color:#7b5bf0; text-align:center; }
+  .report-stats{ text-align:center; font-size:1.15rem; margin:6px 0; }
+  .report-stats b{ color:#e0559b; font-size:1.5rem; }
+  .report-best{
+    text-align:center;
+    background:var(--lemon-soft);
+    border-radius:14px;
+    padding:10px 14px;
+    margin:10px 0;
+    font-weight:700;
+    color:#a9800a;
+    line-height:1.5;
+  }
+  .report-wrong h3{ margin:14px 0 8px; font-size:1.15rem; }
+  .report-wrong ul{ list-style:none; margin:0; padding:0; }
+  .report-wrong li{
+    display:flex; flex-wrap:wrap; gap:4px 12px;
+    background:#fafafc;
+    border-left:4px solid #ff9cc9;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    font-size:.95rem;
+  }
+  .report-wrong li .w-orig{ font-weight:900; font-size:1.05rem; }
+  .report-wrong li .w-user{ color:#e0559b; }
+  .report-wrong li .w-correct{ color:#1fa67a; }
+  .wrong-none{ text-align:center; color:var(--muted); border-left:none !important; justify-content:center; }
+  .report-actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .report-actions button{
+    border:none; border-radius:16px; padding:14px 8px;
+    font-size:1.05rem; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,#6ec6ff,#6fd6ab);
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+  }
+  .report-actions button:active{ transform:scale(.97); }
+  .report-actions button:last-child{ background:linear-gradient(135deg,#ffab76,#ff9cc9); }
+
+  /* ============ 恭喜画面（全屏仪式感） ============ */
+  .celebrate{
+    background:radial-gradient(circle at 50% 30%, rgba(255,214,232,.96), rgba(214,240,255,.97));
+  }
+  .celebrate canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .celebrate-card{
+    position:relative; z-index:2;
+    background:rgba(255,255,255,.9);
+    border-radius:28px;
+    padding:30px 22px;
+    max-width:520px; width:100%;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.18);
+    animation:popIn .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  .celebrate-emoji{ font-size:4.2rem; animation:bounce 1s infinite; }
+  .celebrate-title{
+    font-size:clamp(1.7rem,6vw,2.6rem);
+    font-weight:900;
+    color:#e0559b;
+    margin:10px 0 6px;
+    text-shadow:2px 2px 0 #fff;
+  }
+  .celebrate-sub{ color:#a9800a; font-weight:800; font-size:1rem; }
+  .celebrate-stats{
+    margin:14px 0;
+    font-size:1.2rem;
+    color:#7b5bf0;
+    font-weight:800;
+    background:var(--lav-soft);
+    border-radius:14px;
+    padding:12px;
+  }
+  .celebrate-card button{
+    border:none; border-radius:16px; padding:14px 24px;
+    font-size:1.1rem; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,#ff9cc9,#a78bfa);
+    box-shadow:0 5px 16px rgba(255,156,201,.5);
+  }
+  .celebrate-card button:active{ transform:scale(.97); }
+
+  /* ============ 动画 ============ */
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 4px rgba(111,214,171,.25); }
+    50%{ box-shadow:0 0 0 8px rgba(111,214,171,.12); }
+  }
+  @keyframes bounce{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-14px); }
+  }
+  @keyframes popIn{
+    0%{ transform:scale(.4); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); }
+    40%{ transform:translateX(8px); }
+    60%{ transform:translateX(-5px); }
+    80%{ transform:translateX(5px); }
+  }
+  .shake{ animation:shake .4s; }
+
+  /* ============ 响应式 ============ */
+  @media (max-width:420px){
+    .card{ padding:16px 12px 18px; }
+    .key{ min-height:54px; border-radius:14px; font-size:1.5rem; }
+    .keypad{ gap:8px; }
+    .question{ gap:6px; }
+    .factor,.prod,.op,.answer-box,.slot{ font-size:clamp(1.9rem,9vw,2.8rem); }
+  }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 12px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:700 14px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 九九乘法表</span>
+</div>
+<div class="app">
+  <header class="header">
+    <h1 class="title">🌈 九九乘法表大冒险 🍭</h1>
+    <p class="subtitle">小九九 · 45 个式子，和数字做朋友吧！</p>
+    <div class="best-bar">
+      <span class="best-chip">⭐ 正向最佳：<b id="bestForward">暂无</b></span>
+      <span class="best-chip">🌟 反向最佳：<b id="bestReverse">暂无</b></span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabLearn" class="tab active">📚 学一学<small>先看看乘法表</small></button>
+    <button id="tabForward" class="tab">🧮 正向练习<small>看算式，说答案</small></button>
+    <button id="tabReverse" class="tab">🔄 反向练习<small>看结果，找因数</small></button>
+  </nav>
+
+  <section class="card learn-card" id="learnPanel">
+    <h2 class="learn-title">📚 学一学 · 九九乘法表</h2>
+
+    <h3 class="learn-sub">正向九九乘法表<small>第一个数 × 第二个数 = 得数</small></h3>
+    <div class="fwd-table" id="fwdTable"></div>
+
+    <h3 class="learn-sub">反向九九乘法表<small>看到得数，想是哪两个数相乘</small></h3>
+    <p class="learn-note">🌟 标黄色的「有两种分法」，要特别记住哦！</p>
+    <div class="rev-table" id="revTable"></div>
+  </section>
+
+  <main class="card" id="quizCard" hidden>
+    <div class="topbar">
+      <div class="progress">第 <b id="qIndex">1</b> / 45 题</div>
+      <div class="timer">⏱ <b id="timer">00:00</b></div>
+    </div>
+    <div class="progressbar"><div id="progressFill"></div></div>
+
+    <div class="question">
+      <!-- 正向：3 × 4 = ? -->
+      <div class="q-forward" id="qForward">
+        <span class="factor" id="fA">3</span>
+        <span class="op">×</span>
+        <span class="factor" id="fB">4</span>
+        <span class="op">=</span>
+        <span class="answer-box empty" id="fwdBox">?</span>
+      </div>
+      <!-- 反向：12 = _ × _ -->
+      <div class="q-reverse" id="qReverse">
+        <span class="prod" id="prodVal">12</span>
+        <span class="op">=</span>
+        <span class="slot" id="slotL">?</span>
+        <span class="op">×</span>
+        <span class="slot" id="slotR">?</span>
+      </div>
+    </div>
+
+    <div class="reverse-hint" id="reverseHint"></div>
+    <div class="reverse-tip" id="reverseTip">💡 填对是哪两个数相乘就行，顺序可以换哦（3×4 和 4×3 都对）</div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="keypad">
+      <button class="key" data-d="1">1</button>
+      <button class="key" data-d="2">2</button>
+      <button class="key" data-d="3">3</button>
+      <button class="key" data-d="4">4</button>
+      <button class="key" data-d="5">5</button>
+      <button class="key" data-d="6">6</button>
+      <button class="key" data-d="7">7</button>
+      <button class="key" data-d="8">8</button>
+      <button class="key" data-d="9">9</button>
+      <button class="key key-clear" data-act="clear">⌫ 清除</button>
+      <button class="key" data-d="0">0</button>
+      <button class="key key-next" data-act="next" id="btnNext">下一题 ➜</button>
+    </div>
+  </main>
+
+  <div class="footer">💡 小提示：也可以按键盘数字键答题，回车键 = 下一题</div>
+</div>
+
+<!-- 结算报告 -->
+<div class="overlay" id="reportOverlay" hidden>
+  <div class="report-card">
+    <h2 id="reportTitle"></h2>
+    <div class="report-stats" id="reportStats"></div>
+    <div class="report-best" id="reportBest"></div>
+    <div class="report-wrong">
+      <h3>📝 错题清单</h3>
+      <ul id="wrongList"></ul>
+    </div>
+    <div class="report-actions">
+      <button id="btnAgain">🔁 再练一次</button>
+      <button id="btnSwitchMode">🔃 换个模式练</button>
+    </div>
+  </div>
+</div>
+
+<!-- 恭喜画面 -->
+<div class="overlay celebrate" id="celebrateOverlay" hidden>
+  <canvas id="fx"></canvas>
+  <div class="celebrate-card">
+    <div class="celebrate-emoji">🏆🎉🎊</div>
+    <h2 class="celebrate-title">恭喜你创造了新的纪录！<br>太棒了！</h2>
+    <div class="celebrate-sub">新的最佳成绩已保存 ⭐</div>
+    <div class="celebrate-stats" id="celebrateStats"></div>
+    <button id="btnCelebrateClose">太开心啦！继续加油 💪</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+ * 九九乘法表大冒险 —— 纯单文件（HTML + CSS + JS，零依赖）
+ * 核心：小九九 45 个式子（左操作数 ≤ 右操作数），正向练「看算式答结果」，
+ *       反向练「看结果找因数（多解时填对指定的那一对因数，顺序不限）」。
+ * 成绩：LocalStorage 分别记录正向/反向历史最佳，判定 = 正确率更高，持平看用时更少。
+ * ========================================================================= */
+
+/* ---------- 工具函数 ---------- */
+const $ = (sel) => document.querySelector(sel);
+
+/* ---------- 一、数据准备：小九九 45 个式子 ---------- */
+// 只保留 a ≤ b 的式子（如保留 3×4，不再重复考 4×3），共 1+2+…+9 = 45 个。
+function buildTable(){
+  const t = [];
+  for(let a = 1; a <= 9; a++){
+    for(let b = a; b <= 9; b++){
+      t.push({ a, b, product: a * b });
+    }
+  }
+  return t;
+}
+const TABLE = buildTable();
+const TOTAL = TABLE.length; // 45
+
+// 按乘积分组：{ 12: [{a:2,b:6},{a:3,b:4}], ... }，用于反向练习的「多解」提示。
+const BY_PRODUCT = {};
+for(const p of TABLE){
+  (BY_PRODUCT[p.product] || (BY_PRODUCT[p.product] = [])).push({ a:p.a, b:p.b });
+}
+
+// Fisher–Yates 洗牌，保证 45 题完全乱序。
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ---------- 二、LocalStorage 历史最佳（正向/反向独立） ---------- */
+const LS_FORWARD = "jiujiu_best_forward";
+const LS_REVERSE = "jiujiu_best_reverse";
+
+function loadBest(key){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function saveBest(key, rec){
+  try{ localStorage.setItem(key, JSON.stringify(rec)); }catch(e){}
+}
+
+// 判定「是否更好」：
+//   1) 正确率更高（正确题数更多）→ 更好；
+//   2) 正确率相同 → 用时更少 → 更好；
+//   3) 首次完成（无历史记录）→ 也算创造纪录。
+function isBetter(rec, best){
+  if(!best) return true;
+  if(rec.correct > best.correct) return true;
+  if(rec.correct < best.correct) return false;
+  return rec.timeMs < best.timeMs;
+}
+
+/* ---------- 三、全局状态 ---------- */
+const state = {
+  mode: "learn",       // "learn" | "forward" | "reverse"
+  questions: [],       // 当前测试的乱序题目
+  idx: 0,              // 当前题号（0 起）
+  startTime: 0,
+  elapsedMs: 0,
+  timerStarted: false, // 计时是否已启动（首次输入后置 true）
+  fwdAnswer: "",       // 正向：当前输入的答案字符串
+  revLeft: "",         // 反向：左因数
+  revRight: "",        // 反向：右因数
+  revActive: "left",   // 反向：当前光标所在格 "left" | "right"
+};
+
+/* ---------- 四、计时器 ---------- */
+let timerInterval = null;
+function startTimer(){
+  stopTimer();
+  state.startTime = Date.now();
+  state.elapsedMs = 0;
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 200);
+}
+function updateTimer(){
+  state.elapsedMs = Date.now() - state.startTime;
+  $("#timer").textContent = formatTime(state.elapsedMs);
+}
+function stopTimer(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+}
+function formatTime(ms){
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const ss = s % 60;
+  return String(m).padStart(2, "0") + ":" + String(ss).padStart(2, "0");
+}
+
+/* ---------- 五、提示 / 抖动 ---------- */
+let toastTimer = null;
+function showToast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function hideToast(){ $("#toast").classList.remove("show"); }
+function shake(el){
+  el.classList.remove("shake");
+  void el.offsetWidth; // 强制重排，让抖动动画可重复触发
+  el.classList.add("shake");
+}
+
+/* ---------- 六、历史最佳展示 ---------- */
+function renderBest(){
+  const f = loadBest(LS_FORWARD);
+  const r = loadBest(LS_REVERSE);
+  $("#bestForward").textContent = f ? (f.correct + "/45 · " + formatTime(f.timeMs)) : "暂无";
+  $("#bestReverse").textContent = r ? (r.correct + "/45 · " + formatTime(r.timeMs)) : "暂无";
+}
+
+/* ---------- 七、题库生成 ---------- */
+// 反向练习的多解去重逻辑：
+//   反向同样考全部 45 个式子（每个式子考一次）。题面显示「乘积 = _ × _」，
+//   当前考的是这个特定式子 (a, b)。若该乘积还对应别的式子（多解），
+//   就把「其余所有式子」放进 q.others，作为静态文本提示「已包含」，
+//   用户必须填对当前这一对因数（顺序不限，3×4 与 4×3 都算对）才算正确。
+//   由于 45 题整体乱序，多解乘积的哪个式子先出现是随机的——等价于「随机挑一个考」。
+function buildQuestions(mode){
+  if(mode === "forward"){
+    return shuffle(TABLE).map(q => ({ a:q.a, b:q.b, product:q.product, userAnswer:null }));
+  } else {
+    return shuffle(TABLE).map(q => ({
+      a:q.a, b:q.b, product:q.product,
+      others: BY_PRODUCT[q.product].filter(p => !(p.a === q.a && p.b === q.b)),
+      userAnswer:null,
+    }));
+  }
+}
+
+/* ---------- 八、渲染题目 ---------- */
+function renderQuestion(){
+  const q = state.questions[state.idx];
+  const isF = state.mode === "forward";
+
+  $("#qIndex").textContent = state.idx + 1;
+  $("#progressFill").style.width = ((state.idx + 1) / TOTAL * 100) + "%";
+  $("#btnNext").textContent = (state.idx === TOTAL - 1) ? "提交测试 ✅" : "下一题 ➜";
+
+  // 正向 / 反向 界面切换
+  $("#qForward").style.display = isF ? "flex" : "none";
+  $("#qReverse").style.display = isF ? "none" : "flex";
+  $("#reverseHint").style.display = isF ? "none" : "block";
+  $("#reverseTip").style.display = isF ? "none" : "block";
+
+  if(isF){
+    $("#fA").textContent = q.a;
+    $("#fB").textContent = q.b;
+    state.fwdAnswer = "";
+    $("#fwdBox").textContent = "?";
+    $("#fwdBox").classList.add("empty");
+  } else {
+    $("#prodVal").textContent = q.product;
+    state.revLeft = ""; state.revRight = ""; state.revActive = "left";
+    $("#slotL").textContent = "?"; $("#slotL").classList.remove("filled");
+    $("#slotR").textContent = "?"; $("#slotR").classList.remove("filled");
+    updateSlotActive();
+
+    // 多解提示：展示「其余所有式子」告诉用户不能填这些。
+    if(q.others && q.others.length){
+      const chips = q.others.map(o =>
+        '<span class="hint-chip">' + q.product + ' = ' + o.a + ' × ' + o.b + '</span>'
+      ).join("");
+      $("#reverseHint").innerHTML = "🧩 已包含：" + chips + "（这题不能再填它哦）";
+    } else {
+      $("#reverseHint").innerHTML = "";
+    }
+  }
+  hideToast();
+}
+
+function updateSlotActive(){
+  $("#slotL").classList.toggle("active", state.revActive === "left");
+  $("#slotR").classList.toggle("active", state.revActive === "right");
+}
+
+/* ---------- 九、输入处理（虚拟键盘 / 实体键盘通用） ---------- */
+function pressDigit(d){
+  if(!state.timerStarted){ state.timerStarted = true; startTimer(); } // 首次输入才启动计时
+  if(state.mode === "forward"){
+    if(state.fwdAnswer.length >= 3) return; // 最大乘积 81，两位；放宽到 3 位防误触
+    state.fwdAnswer += d;
+    $("#fwdBox").textContent = state.fwdAnswer;
+    $("#fwdBox").classList.remove("empty");
+  } else {
+    if(state.revActive === "left"){
+      state.revLeft = d;
+      $("#slotL").textContent = d;
+      $("#slotL").classList.add("filled");
+      state.revActive = "right";
+    } else {
+      state.revRight = d;
+      $("#slotR").textContent = d;
+      $("#slotR").classList.add("filled");
+    }
+    updateSlotActive();
+  }
+}
+
+function pressClear(){
+  if(state.mode === "forward"){
+    state.fwdAnswer = "";
+    $("#fwdBox").textContent = "?";
+    $("#fwdBox").classList.add("empty");
+  } else {
+    if(state.revActive === "left"){
+      if(state.revLeft){ state.revLeft = ""; $("#slotL").textContent = "?"; $("#slotL").classList.remove("filled"); }
+      else { state.revActive = "right"; }
+    } else {
+      if(state.revRight){ state.revRight = ""; $("#slotR").textContent = "?"; $("#slotR").classList.remove("filled"); }
+      else { state.revActive = "left"; }
+    }
+    updateSlotActive();
+  }
+}
+
+function pressNext(){
+  const q = state.questions[state.idx];
+
+  // 校验：正向允许修改但不可空着（提示）；反向必须两格都填满。
+  if(state.mode === "forward"){
+    if(state.fwdAnswer === ""){
+      showToast("这一题还没填答案哦～先填一个数字吧！");
+      shake($("#fwdBox"));
+      return;
+    }
+    q.userAnswer = state.fwdAnswer;
+  } else {
+    if(!state.revLeft || !state.revRight){
+      showToast("两个空都要填满哦～");
+      shake($("#slotL")); shake($("#slotR"));
+      return;
+    }
+    q.userAnswer = { left: state.revLeft, right: state.revRight };
+  }
+
+  if(state.idx < TOTAL - 1){
+    state.idx++;
+    renderQuestion();
+  } else {
+    submitTest(); // 最后一题 → 提交
+  }
+}
+
+/* ---------- 十、判分 ---------- */
+function gradeTest(){
+  let correct = 0;
+  const wrong = [];
+  for(const q of state.questions){
+    let ok = false, userTxt, correctTxt;
+    if(state.mode === "forward"){
+      userTxt = (q.userAnswer == null || q.userAnswer === "") ? "空白" : q.userAnswer;
+      correctTxt = String(q.product);
+      ok = (q.userAnswer != null && q.userAnswer !== "" && Number(q.userAnswer) === q.product);
+    } else {
+      const l = q.userAnswer ? q.userAnswer.left : "";
+      const r = q.userAnswer ? q.userAnswer.right : "";
+      userTxt = (l && r) ? (l + " × " + r) : "空白";
+      correctTxt = q.a + " × " + q.b;
+      ok = (l && r) && (
+        (l === String(q.a) && r === String(q.b)) ||
+        (l === String(q.b) && r === String(q.a))
+      ); // 两个因数都要对，但顺序不限（3×4 与 4×3 都算对）
+    }
+    if(ok){ correct++; }
+    else{ wrong.push({ q, userTxt, correctTxt }); }
+  }
+  return { correct, wrong };
+}
+
+/* ---------- 十一、提交与结算 ---------- */
+function submitTest(){
+  state.elapsedMs = state.timerStarted ? (Date.now() - state.startTime) : 0; // 计时从首次输入开始，到提交那一刻
+  stopTimer();
+
+  const results = gradeTest();
+  const rec = { correct: results.correct, total: TOTAL, timeMs: state.elapsedMs, date: Date.now() };
+  const key = state.mode === "forward" ? LS_FORWARD : LS_REVERSE;
+  const best = loadBest(key);
+  const broke = isBetter(rec, best);
+  if(broke) saveBest(key, rec);
+
+  renderBest();
+  renderReport(results, rec, best, broke);
+  if(broke) showCelebration(rec);
+}
+
+function renderReport(results, rec, best, broke){
+  const pct = Math.round(results.correct / TOTAL * 100);
+  let emoji, msg;
+  if(results.correct === TOTAL){ emoji = "💯"; msg = "全部答对，太厉害啦！"; }
+  else if(results.correct >= 40){ emoji = "🌟"; msg = "很棒，快满分啦！"; }
+  else if(results.correct >= 30){ emoji = "👍"; msg = "不错哦，继续加油！"; }
+  else { emoji = "💪"; msg = "别灰心，多练几次就更棒啦！"; }
+
+  $("#reportTitle").textContent = emoji + " " + msg;
+  $("#reportStats").innerHTML =
+    "答对 <b>" + results.correct + "</b> / 45 题（正确率 " + pct + "%）&nbsp;&nbsp;用时 <b>" + formatTime(rec.timeMs) + "</b>";
+
+  const bestTxt = best ? (best.correct + "/45（" + formatTime(best.timeMs) + "）") : "暂无记录";
+  $("#reportBest").textContent = broke
+    ? "🎉 你打破了历史纪录！新的最佳成绩已保存！"
+    : ("历史最佳：" + bestTxt + " —— 再快一点点就能破纪录啦！");
+
+  const wl = $("#wrongList");
+  if(results.wrong.length === 0){
+    wl.innerHTML = '<li class="wrong-none">🎉 没有错题，全部答对！</li>';
+  } else {
+    wl.innerHTML = results.wrong.map(w => {
+      const orig = state.mode === "forward"
+        ? (w.q.a + " × " + w.q.b + " = ?")
+        : (w.q.product + " = _ × _");
+      return '<li>' +
+        '<span class="w-orig">' + orig + '</span>' +
+        '<span class="w-user">你的答案：' + w.userTxt + '</span>' +
+        '<span class="w-correct">正确答案：' + w.correctTxt + '</span>' +
+      '</li>';
+    }).join("");
+  }
+
+  $("#btnSwitchMode").textContent = state.mode === "forward" ? "🔄 去练反向" : "🧮 去练正向";
+  $("#reportOverlay").hidden = false;
+}
+
+/* ---------- 十二、恭喜画面 + 烟花 / 彩带特效（Canvas 零依赖） ---------- */
+const FX_COLORS = ["#ff9cc9","#6fd6ab","#a78bfa","#ffd54f","#ffab76","#6ec6ff"];
+let fxParts = [], fxRunning = false, fxRAF = null, fxLast = 0, fxW = 0, fxH = 0, fxCtx = null;
+
+function showCelebration(rec){
+  const modeTxt = state.mode === "forward" ? "正向" : "反向";
+  $("#celebrateStats").textContent = modeTxt + "练习 · " + rec.correct + "/45 · 用时 " + formatTime(rec.timeMs);
+  $("#celebrateOverlay").hidden = false;
+  startFireworks();
+}
+
+function startFireworks(){
+  const cv = $("#fx");
+  const dpr = window.devicePixelRatio || 1;
+  fxW = window.innerWidth; fxH = window.innerHeight;
+  cv.width = Math.floor(fxW * dpr);
+  cv.height = Math.floor(fxH * dpr);
+  cv.style.width = fxW + "px";
+  cv.style.height = fxH + "px";
+  fxCtx = cv.getContext("2d");
+  fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  fxParts = [];
+  // 持续的彩带雨
+  for(let i = 0; i < 130; i++) fxParts.push(makeConfetti());
+  fxRunning = true; fxLast = 0;
+  function frame(t){
+    if(!fxRunning) return;
+    const dt = Math.min(40, t - fxLast); fxLast = t;
+    if(Math.random() < 0.035) spawnFirework(); // 随机绽放烟花
+    fxCtx.clearRect(0, 0, fxW, fxH);
+    fxParts = fxParts.filter(p => !p.dead);
+    for(const p of fxParts){ updateParticle(p, dt); drawParticle(p); }
+    fxRAF = requestAnimationFrame(frame);
+  }
+  fxRAF = requestAnimationFrame(frame);
+}
+function stopFireworks(){
+  fxRunning = false;
+  if(fxRAF) cancelAnimationFrame(fxRAF);
+  fxRAF = null; fxParts = [];
+}
+function makeConfetti(){
+  return {
+    type:"confetti",
+    x: Math.random() * fxW,
+    y: -20 - Math.random() * fxH * 0.5,
+    vx: (Math.random() - 0.5) * 0.6,
+    vy: 1.4 + Math.random() * 2.4,
+    size: 6 + Math.random() * 7,
+    color: FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)],
+    rot: Math.random() * Math.PI * 2,
+    vr: (Math.random() - 0.5) * 0.22,
+  };
+}
+function spawnFirework(){
+  const x = fxW * 0.2 + Math.random() * fxW * 0.6;
+  const y = fxH * 0.18 + Math.random() * fxH * 0.35;
+  const color = FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)];
+  const n = 42;
+  for(let i = 0; i < n; i++){
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.2;
+    const sp = 2 + Math.random() * 4;
+    fxParts.push({
+      type:"firework", x, y,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      size: 2 + Math.random() * 3.2, color, rot:0, vr:0,
+      life: 1, decay: 0.006 + Math.random() * 0.012,
+    });
+  }
+}
+function updateParticle(p, dt){
+  const k = dt / 16.67;
+  if(p.type === "confetti"){
+    p.x += p.vx * k; p.y += p.vy * k; p.rot += p.vr * k;
+    if(p.y > fxH + 30){ p.y = -20; p.x = Math.random() * fxW; }
+  } else {
+    p.x += p.vx * k; p.y += p.vy * k; p.vy += 0.05 * k; p.life -= p.decay * k;
+    if(p.life <= 0) p.dead = true;
+  }
+}
+function drawParticle(p){
+  fxCtx.save();
+  fxCtx.globalAlpha = p.type === "firework" ? Math.max(0, p.life) : 0.92;
+  fxCtx.translate(p.x, p.y);
+  if(p.type === "confetti") fxCtx.rotate(p.rot);
+  fxCtx.fillStyle = p.color;
+  fxCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.62);
+  fxCtx.restore();
+}
+
+/* ---------- 学一学（乘法表展示） ---------- */
+function renderLearnTables(){
+  const ft = $("#fwdTable");
+  ft.innerHTML = "";
+  for(let a = 1; a <= 9; a++){
+    const row = document.createElement("div");
+    row.className = "fwd-row";
+    const head = document.createElement("div");
+    head.className = "fwd-row-head c" + a;
+    head.textContent = a + " 的乘法";
+    row.appendChild(head);
+    const chips = document.createElement("div");
+    chips.className = "fwd-row-chips";
+    for(let b = a; b <= 9; b++){
+      const chip = document.createElement("span");
+      chip.className = "fwd-chip c" + a;
+      chip.textContent = a + "×" + b + "=" + (a * b);
+      chips.appendChild(chip);
+    }
+    row.appendChild(chips);
+    ft.appendChild(row);
+  }
+
+  const rt = $("#revTable");
+  rt.innerHTML = "";
+  const products = Object.keys(BY_PRODUCT).map(Number).sort((x, y) => x - y);
+  for(const p of products){
+    const pairs = BY_PRODUCT[p];
+    const card = document.createElement("div");
+    card.className = "rev-card" + (pairs.length > 1 ? " multi" : "");
+    const prod = document.createElement("div");
+    prod.className = "rev-prod";
+    prod.textContent = p;
+    card.appendChild(prod);
+    for(const pr of pairs){
+      const eq = document.createElement("div");
+      eq.className = "rev-eq";
+      eq.textContent = p + " = " + pr.a + " × " + pr.b;
+      card.appendChild(eq);
+    }
+    if(pairs.length > 1){
+      const badge = document.createElement("div");
+      badge.className = "rev-badge";
+      badge.textContent = pairs.length + " 种分法";
+      card.appendChild(badge);
+    }
+    rt.appendChild(card);
+  }
+}
+
+function showLearn(){
+  stopTimer();
+  stopFireworks();
+  $("#reportOverlay").hidden = true;
+  $("#celebrateOverlay").hidden = true;
+
+  state.mode = "learn";
+  $("#tabLearn").classList.add("active");
+  $("#tabForward").classList.remove("active");
+  $("#tabReverse").classList.remove("active");
+  $("#learnPanel").hidden = false;
+  $("#quizCard").hidden = true;
+}
+
+/* ---------- 十三、开始 / 切换模式（切换时重置当前测试状态） ---------- */
+function startQuiz(mode){
+  stopTimer();
+  stopFireworks();
+  $("#reportOverlay").hidden = true;
+  $("#celebrateOverlay").hidden = true;
+  $("#learnPanel").hidden = true;
+  $("#quizCard").hidden = false;
+
+  state.mode = mode;
+  state.questions = buildQuestions(mode);
+  state.idx = 0;
+  state.fwdAnswer = "";
+  state.revLeft = ""; state.revRight = ""; state.revActive = "left";
+  state.timerStarted = false;
+  state.elapsedMs = 0;
+
+  $("#tabLearn").classList.remove("active");
+  $("#tabForward").classList.toggle("active", mode === "forward");
+  $("#tabReverse").classList.toggle("active", mode === "reverse");
+
+  renderQuestion();
+  $("#timer").textContent = "00:00"; // 计时等用户开始输入后才启动
+}
+
+/* ---------- 十四、事件绑定 ---------- */
+function overlaysOpen(){
+  return !$("#reportOverlay").hidden || !$("#celebrateOverlay").hidden;
+}
+
+$("#tabLearn").addEventListener("click", () => { if(state.mode !== "learn") showLearn(); });
+$("#tabForward").addEventListener("click", () => { if(state.mode !== "forward") startQuiz("forward"); });
+$("#tabReverse").addEventListener("click", () => { if(state.mode !== "reverse") startQuiz("reverse"); });
+
+// 虚拟键盘（事件委托）
+$(".keypad").addEventListener("click", (e) => {
+  const btn = e.target.closest("button.key");
+  if(!btn) return;
+  btn.blur();
+  if(btn.dataset.d !== undefined){ pressDigit(btn.dataset.d); }
+  else if(btn.dataset.act === "clear"){ pressClear(); }
+  else if(btn.dataset.act === "next"){ pressNext(); }
+});
+
+// 反向：点击因数格切换光标
+$("#slotL").addEventListener("click", () => { if(state.mode === "reverse"){ state.revActive = "left"; updateSlotActive(); } });
+$("#slotR").addEventListener("click", () => { if(state.mode === "reverse"){ state.revActive = "right"; updateSlotActive(); } });
+
+// 实体键盘：数字 0-9、退格 = 清除、回车 = 下一题
+document.addEventListener("keydown", (e) => {
+  if(overlaysOpen() || state.mode === "learn") return;
+  if(e.key >= "0" && e.key <= "9"){ pressDigit(e.key); e.preventDefault(); }
+  else if(e.key === "Backspace" || e.key === "Delete"){ pressClear(); e.preventDefault(); }
+  else if(e.key === "Enter"){ pressNext(); e.preventDefault(); }
+});
+
+// 结算 / 恭喜 按钮
+$("#btnAgain").addEventListener("click", () => startQuiz(state.mode));
+$("#btnSwitchMode").addEventListener("click", () => startQuiz(state.mode === "forward" ? "reverse" : "forward"));
+$("#btnCelebrateClose").addEventListener("click", () => { $("#celebrateOverlay").hidden = true; stopFireworks(); });
+
+/* ---------- 十五、初始化 ---------- */
+renderBest();
+renderLearnTables();
+showLearn();
+
+/* ---------- 调试钩子（仅 ?test=1 时暴露，正常使用无影响） ---------- */
+if(new URLSearchParams(location.search).has("test")){
+  window.__test = { TABLE, TOTAL, BY_PRODUCT, buildQuestions, isBetter, gradeTest, state };
+}
+</script>
+</body>
+</html>
