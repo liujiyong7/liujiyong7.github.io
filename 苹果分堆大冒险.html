@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="苹果分堆大冒险：用线段图帮助二年级小朋友理解公倍数与余数的趣味闯关游戏。">
+<title>苹果分堆大冒险 · 公倍数与余数</title>
+<style>
+  /* ===== 配色：阳光明媚的果园 ===== */
+  :root{
+    --apple:#ff4d4d;   /* 苹果红 */
+    --rose:#ff2e63;    /* 尾巴/缺口红 */
+    --orange:#ffa940;  /* 活力橙 */
+    --green:#37c871;   /* 草地绿 */
+    --yellow:#ffd23f;  /* 温柔黄 */
+    --sky:#4aa8ff;     /* 天空蓝 */
+    --ink:#4a4a5a;
+    --sub:#9aa0ac;
+    --card:#ffffff;
+    --line:#ffe0c9;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    background:linear-gradient(160deg,#fff6e5 0%,#ffe9dd 42%,#e9f7ee 100%);
+    background-attachment:fixed;
+    -webkit-text-size-adjust:100%;
+  }
+  button{ font-family:inherit; touch-action:manipulation; cursor:pointer; }
+  .app{ width:100%; max-width:700px; padding:14px 14px 46px; margin:0 auto; }
+
+  /* ===== 顶部标题 ===== */
+  .header{ text-align:center; margin:6px 0 16px; }
+  .header h1{ margin:0 0 6px; font-size:clamp(24px,6vw,34px); letter-spacing:1px; font-weight:900; }
+  .header .sub{ margin:0; color:var(--sub); font-size:14.5px; line-height:1.7; }
+  .celebrate{
+    display:none; margin:12px auto 0; width:max-content; max-width:100%;
+    background:linear-gradient(135deg,var(--yellow),var(--orange)); color:#7a4b00;
+    border-radius:999px; padding:8px 18px; font-weight:800; font-size:15px;
+    box-shadow:0 8px 18px rgba(255,159,64,.35);
+  }
+
+  /* ===== 关卡导航栏 ===== */
+  .levels{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:0 0 14px; }
+  .lv{
+    width:44px; height:44px; border-radius:14px; border:2px solid #ffe3d1;
+    background:#fff; color:var(--ink); font-weight:800; font-size:17px;
+    position:relative; transition:.15s; box-shadow:0 3px 8px rgba(0,0,0,.05);
+  }
+  .lv.on{
+    background:linear-gradient(135deg,var(--apple),var(--rose)); color:#fff;
+    border-color:transparent; transform:translateY(-2px);
+    box-shadow:0 8px 16px rgba(255,77,77,.35);
+  }
+  .lv.done{ border-color:var(--green); }
+  .lv em{ position:absolute; top:-8px; right:-6px; font-style:normal; font-size:12px; }
+  .lv:active{ transform:scale(.92); }
+
+  /* ===== 题目卡片 ===== */
+  .qcard{
+    background:var(--card); border-radius:22px; padding:20px 18px;
+    box-shadow:0 12px 30px rgba(255,140,90,.16); border:1px solid var(--line);
+  }
+  .stage{
+    display:inline-block; background:#fff3e0; color:#e07830; border-radius:999px;
+    padding:5px 14px; font-size:13px; font-weight:800; margin-bottom:14px;
+  }
+  .q{ font-size:clamp(17px,4.6vw,21px); font-weight:800; line-height:1.9; margin:0 0 16px; }
+
+  .reveal{
+    display:block; width:100%; border:none; border-radius:16px; padding:15px 16px;
+    font-size:18px; font-weight:800; background:linear-gradient(135deg,var(--yellow),var(--orange));
+    color:#7a4b00; box-shadow:0 8px 18px rgba(255,159,64,.4); transition:.15s; letter-spacing:.5px;
+  }
+  .reveal:active{ transform:scale(.97); }
+
+  /* ===== 答案与线段图 ===== */
+  .answer{ display:none; }
+  .answer.show{ display:block; animation:popIn .55s cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes popIn{ from{opacity:0; transform:translateY(14px) scale(.97);} to{opacity:1; transform:none;} }
+
+  .ans-box{
+    margin-top:16px; background:linear-gradient(135deg,#fff7ea,#fff0f0);
+    border:2px dashed #ffd9b8; border-radius:16px; padding:14px 14px 8px;
+  }
+  .ans-label{ font-size:13.5px; color:var(--sub); font-weight:700; }
+  .ans-big{ font-size:clamp(26px,8vw,36px); font-weight:900; color:var(--apple); margin:2px 0 8px; }
+  .ans-note{ margin:10px 2px 4px; font-size:14.5px; color:#7c6f64; line-height:1.8; }
+
+  .dscroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:4px; padding:2px 2px 4px; }
+  .dscroll svg{ display:block; margin:0 auto; }
+  .dscroll text{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif; }
+  .diagram-hint{ text-align:center; font-size:12px; color:#c7a17a; margin-top:2px; }
+  .pulse{ animation:pulse 1s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  /* ===== 底部导航 ===== */
+  .nav-bottom{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-top:16px; }
+  .nav-bottom .pgn{ font-size:14px; color:var(--sub); font-weight:700; white-space:nowrap; }
+  .pgbtn{
+    flex:1; border:2px solid #ffe3d1; background:#fff; border-radius:14px;
+    padding:11px 12px; font-size:15px; font-weight:800; color:var(--ink); transition:.15s;
+  }
+  .pgbtn:disabled{ opacity:.4; cursor:default; }
+  .pgbtn:not(:disabled):active{ transform:scale(.96); background:#fff3e0; }
+  .foot-note{ text-align:center; margin-top:18px; font-size:12.5px; color:var(--sub); line-height:1.8; }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== 站点统一导航条 ===== -->
+<div style="position:sticky;top:0;z-index:9999;width:max-content;max-width:100%;margin:0 auto 10px;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,.92);border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:0 6px 18px rgba(15,23,42,.16);font:600 13px/1.2 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;">🏠 首页</a>
+  <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:999px;background:#f1f5f9;color:#64748b;">🔢 数学 · 苹果分堆大冒险</span>
+</div>
+
+<div class="app">
+  <header class="header">
+    <h1>🍎 苹果分堆大冒险 🍏</h1>
+    <p class="sub">5个5个、6个6个怎么分？<br>用线段图把「藏起来的规律」画出来！</p>
+    <div class="celebrate" id="celebrate">🎉 太棒啦，9 关全部通关！你是分苹果小达人！</div>
+  </header>
+
+  <div class="levels" id="levels"></div>
+
+  <div class="qcard">
+    <div class="stage" id="stage"></div>
+    <p class="q" id="q"></p>
+    <button class="reveal" id="revealBtn">🤔 思考一下，点击显示答案</button>
+
+    <div class="answer" id="answer">
+      <div class="ans-box">
+        <div class="ans-label">🍎 答案</div>
+        <div class="ans-big" id="ansNum"></div>
+        <div class="dscroll" id="diagram"></div>
+        <div class="diagram-hint">👈👉 图太宽时可以左右滑动</div>
+        <p class="ans-note" id="ansNote"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bottom">
+    <button class="pgbtn" id="prevBtn">⬅️ 上一关</button>
+    <div class="pgn">第 <b id="curNum">1</b> / 9 关</div>
+    <button class="pgbtn" id="nextBtn">下一关 ➡️</button>
+  </div>
+
+  <p class="foot-note">小提示：先自己想一想，再看线段图哦～<br>数轴图会告诉你「几个几个一数」是怎么对齐的。</p>
+</div>
+
+<script>
+/* ================================================================
+   苹果分堆大冒险 —— 线段图绘制与闯关逻辑
+   9 道循序渐进题：标准公倍数 → 同余同差 → 变装转化 → 三数情况
+   ================================================================ */
+(function(){
+"use strict";
+
+/* ---------- 配色 ---------- */
+var C = {
+  red:'#ff5b6a', redD:'#e63946',
+  orange:'#ffa940', green:'#37c871', yellow:'#ffd23f',
+  blue:'#4aa8ff', purple:'#a78bfa',
+  ink:'#4a4a5a', sub:'#9aa0ac', rose:'#ff2e63'
+};
+
+/* ---------- 线段图基础参数 ---------- */
+var U = 6.2;     /* 每个「单位」占多少像素 */
+var MX = 26;     /* 左边距 */
+var H  = 36;     /* 方块高度 */
+var RLABEL = 22, RLINE = 32, BAND1 = 40, BAND2 = 154; /* 数轴/安全区布局 */
+
+function X(u){ return MX + u * U; }
+
+/* ---------- SVG 基础绘制 ---------- */
+function r(x,y,w,h,fill,o){
+  o = o || {};
+  var rx = (o.rx != null) ? o.rx : 4;
+  var sw = (o.sw != null) ? o.sw : 0;
+  var st = o.stroke || 'none';
+  var dash = o.dash ? (' stroke-dasharray="' + o.dash + '"') : '';
+  return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h +
+         '" rx="' + rx + '" fill="' + fill + '" stroke="' + st + '" stroke-width="' + sw + '"' + dash + '/>';
+}
+function t(x,y,s,fs,fill,o){
+  o = o || {};
+  var w = o.w || '800';
+  var a = o.a || 'middle';
+  var cls = o.cls ? (' class="' + o.cls + '"') : '';
+  return '<text x="' + x + '" y="' + y + '" font-size="' + fs + '" fill="' + fill +
+         '" font-weight="' + w + '" text-anchor="' + a + '"' + cls + '>' + s + '</text>';
+}
+function ln(x1,y1,x2,y2,color,sw,dash){
+  return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
+         '" stroke="' + color + '" stroke-width="' + (sw || 2) + '"' +
+         (dash ? (' stroke-dasharray="' + dash + '"') : '') + '/>';
+}
+function box(x,y,w,h,fill){ return r(x,y,w,h,fill,{rx:4, sw:1, stroke:'rgba(0,0,0,.06)'}); }
+
+/* 一整格方块（按比例，内写数字） */
+function block(y, u, size, fill, label){
+  return box(X(u), y, size*U, H, fill) +
+         t(X(u) + size*U/2, y + H/2 + 4.5, label, 13, '#fff');
+}
+/* 一整行方块（fromUnit → toUnit，步长 size） */
+function blocks(y, from, to, size, fill, label){
+  var s = '';
+  for(var u = from; u < to; u += size){ s += block(y, u, size, fill, label); }
+  return s;
+}
+/* 一段不完整的方块（如最后一堆只剩几个） */
+function partBlock(y, u1, u2, fill, label){
+  var w = (u2 - u1) * U;
+  return box(X(u1), y, w, H, fill) +
+         t(X(u1) + w/2, y + H/2 + 4.5, label, 13, '#fff');
+}
+/* 虚线缺口（挖掉的部分） */
+function ghost(x, y, w, color){
+  return r(x, y, w, H, 'none', {rx:4, sw:2, stroke:color, dash:'5 4'});
+}
+
+/* 垂直对齐虚线 */
+function vdash(x, y1, y2, color){ return ln(x, y1, x, y2, color, 2.5, '6 5'); }
+
+/* 小旗子 / 星星标记 */
+function star(x, y, label, color, o){
+  o = o || {};
+  var cls = o.pulse ? ' class="pulse"' : '';
+  var s = '<text x="' + x + '" y="' + y + '" font-size="' + (o.starsz || 20) + '" text-anchor="middle"' + cls + '>⭐</text>';
+  if(label){ s += t(x, y + 18, label, o.fs || 13, color || C.red, {w:'900'}); }
+  return s;
+}
+/* 圆角小胶囊标签 */
+function pill(x, cy, str, fill, fs){
+  fs = fs || 13;
+  var w = str.length * fs * 0.62 + 24;
+  return r(x - w/2, cy - 14, w, 28, fill, {rx:14, sw:0}) +
+         t(x, cy + 4.5, str, fs, '#fff', {w:'900'});
+}
+
+/* 数轴 0-100（含刻度与安全区） */
+function ruler100(bandFrom, bandTo){
+  var s = '';
+  for(var u = 0; u <= 100; u += 10){
+    s += ln(X(u), RLINE, X(u), RLINE - 5, C.sub, 1.5);
+    s += t(X(u), RLABEL, u, 11.5, C.sub, {w:'700'});
+  }
+  if(bandFrom != null){
+    s += r(X(bandFrom), BAND1, X(bandTo) - X(bandFrom), BAND2 - BAND1, 'rgba(55,200,113,.16)', {rx:12, sw:0});
+    s += t((X(bandFrom) + X(bandTo)) / 2, BAND1 + 16, '安全区 ' + bandFrom + '～' + bandTo, 12.5, C.green, {w:'900'});
+  }
+  return s;
+}
+
+function wrap(w, h, inner){
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h +
+         '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="线段图">' + inner + '</svg>';
+}
+
+/* ---------- 主图：加尾巴（同余 +k） ---------- */
+function tailMain(tail, ans, capA, capB){
+  var base = 90, y5 = 66, y6 = 114, rb = y6 + H; /* rb = 150 */
+  var s = '';
+  s += ruler100(80, 100);
+  s += blocks(y5, 0, base, 5, C.orange, '5');
+  s += blocks(y6, 0, base, 6, C.red, '6');
+  /* +尾巴 */
+  s += box(X(base), y5, tail*U, H, C.rose);
+  s += t(X(base) + tail*U/2, y5 - 7, '+' + tail, 13, C.rose, {w:'900'});
+  s += box(X(base), y6, tail*U, H, C.rose);
+  s += t(X(base) + tail*U/2, y6 - 7, '+' + tail, 13, C.rose, {w:'900'});
+  /* 对齐线 & 结果线 */
+  s += vdash(X(base), RLINE, rb, '#cbd5e1');
+  s += vdash(X(ans), RLINE, rb, C.green);
+  s += star(X(ans), rb + 28, ans + ' ✓ 答案', C.green, {starsz:24});
+  s += t(MX, rb + 66, capA, 14.5, C.ink, {w:'900', a:'start'});
+  s += t(MX, rb + 88, capB, 13.5, C.sub, {w:'700', a:'start'});
+  return wrap(X(100) + MX, rb + 108, s);
+}
+
+/* ---------- 主图：挖缺口（同差 -k） ---------- */
+function gapMain(gap, ans, capA, capB){
+  var base = 90, y5 = 66, y6 = 114, rb = y6 + H;
+  var s = '';
+  s += ruler100(80, 100);
+  /* 5 个一数 */
+  var full5 = Math.floor(ans / 5) * 5, rem5 = ans - full5;
+  s += blocks(y5, 0, full5, 5, C.orange, '5');
+  if(rem5 > 0){ s += partBlock(y5, full5, full5 + rem5, C.orange, rem5); }
+  s += ghost(X(ans), y5, gap*U, C.rose);
+  s += t(X(ans) + gap*U/2, y5 - 7, '-' + gap, 13, C.rose, {w:'900'});
+  /* 6 个一数 */
+  var full6 = Math.floor(ans / 6) * 6, rem6 = ans - full6;
+  s += blocks(y6, 0, full6, 6, C.red, '6');
+  if(rem6 > 0){ s += partBlock(y6, full6, full6 + rem6, C.red, rem6); }
+  s += ghost(X(ans), y6, gap*U, C.rose);
+  s += t(X(ans) + gap*U/2, y6 - 7, '-' + gap, 13, C.rose, {w:'900'});
+  /* 对齐线 & 结果线 */
+  s += vdash(X(base), RLINE, rb, '#cbd5e1');
+  s += vdash(X(ans), RLINE, rb, C.green);
+  s += star(X(ans), rb + 28, ans + ' ✓ 答案', C.green, {starsz:24});
+  s += t(MX, rb + 66, capA, 14.5, C.ink, {w:'900', a:'start'});
+  s += t(MX, rb + 88, capB, 13.5, C.sub, {w:'700', a:'start'});
+  return wrap(X(100) + MX, rb + 108, s);
+}
+
+/* ---------- 转化图：变装游戏（差=剩 的等价） ---------- */
+function convPanel(rows, title){
+  var U2 = 11;
+  function X2(u){ return MX + u * U2; }
+  var s = '';
+  var y = 40;
+  s += t(MX, 26, title, 15, C.red, {w:'900', a:'start'});
+  for(var i = 0; i < rows.length; i++){
+    var row = rows[i];
+    var size = row.size, filled = row.filled, color = row.color, note = row.note;
+    var fullEnd = size * 3; /* 先画 3 堆完整的 */
+    for(var u = 0; u < fullEnd; u += size){
+      s += box(X2(u), y, size*U2, H, color);
+      s += t(X2(u) + size*U2/2, y + H/2 + 4.5, size, 13, '#fff');
+    }
+    /* 最后一堆：实心剩几个 */
+    s += box(X2(fullEnd), y, filled*U2, H, color);
+    s += t(X2(fullEnd) + filled*U2/2, y + H/2 + 4.5, filled, 13, '#fff');
+    /* 虚线补足几个 */
+    var gap = size - filled;
+    s += r(X2(fullEnd + filled), y, gap*U2, H, 'none', {rx:4, sw:2, stroke:C.rose, dash:'6 5'});
+    s += t(X2(fullEnd + filled) + gap*U2/2, y - 8, '补' + gap, 12.5, C.rose, {w:'900'});
+    s += t(MX, y + H + 18, note, 13.5, C.ink, {w:'800', a:'start'});
+    y += H + 34;
+  }
+  return wrap(X2(24) + MX + 40, y, s);
+}
+
+/* ---------- 9 关线段图 ---------- */
+function buildL1(){
+  var span = 90, y5 = 88, y6 = 136, rb = y6 + H;
+  var s = '';
+  [30, 60, 90].forEach(function(m){
+    s += vdash(X(m), y5, rb, C.purple);
+    s += star(X(m), 58, m, C.red);
+  });
+  s += blocks(y5, 0, span, 5, C.orange, '5');
+  s += blocks(y6, 0, span, 6, C.red, '6');
+  s += t(X(span) + 16, y5 + H/2 + 4, '…', 22, C.sub, {w:'700'});
+  s += t(X(span) + 16, y6 + H/2 + 4, '…', 22, C.sub, {w:'700'});
+  s += t(MX, rb + 36, '5 个一数 和 6 个一数，每 30 个就“手拉手”对齐一次！', 15, C.ink, {w:'900', a:'start'});
+  s += t(MX, rb + 58, '对齐点：30、60、90…… 这些都可能是苹果的个数。', 13.5, C.sub, {w:'700', a:'start'});
+  return wrap(X(span) + MX + 34, rb + 78, s);
+}
+function buildL2(){
+  var span = 60, y5 = 116, y6 = 164, rb = y6 + H;
+  var s = '';
+  s += vdash(X(30), y5, rb, C.green);
+  s += star(X(30), 76, '', C.green, {pulse:true, starsz:26});
+  s += pill(X(30), 102, '30 = 最少', C.green);
+  s += vdash(X(60), y5, rb, '#cbd5e1');
+  s += star(X(60), 80, '60…', '#b6bec9');
+  s += blocks(y5, 0, span, 5, C.orange, '5');
+  s += blocks(y6, 0, span, 6, C.red, '6');
+  s += t(MX, rb + 36, '第一次对齐的地方就是「最少」：30 个！', 15, C.ink, {w:'900', a:'start'});
+  s += t(MX, rb + 58, '后面 60、90 也会对齐，但 30 是最少的一筐。', 13.5, C.sub, {w:'700', a:'start'});
+  return wrap(X(span) + MX + 40, rb + 78, s);
+}
+function buildL3(){
+  var y5 = 66, y6 = 114, rb = y6 + H;
+  var s = '';
+  s += ruler100(80, 100);
+  s += blocks(y5, 0, 90, 5, C.orange, '5');
+  s += blocks(y6, 0, 90, 6, C.red, '6');
+  s += vdash(X(90), RLINE, rb, C.purple);
+  s += star(X(90), rb + 28, '90 ✓ 在安全区', C.green, {starsz:24});
+  s += t(MX, rb + 66, '80～100 的安全区里，只有 90 让 5 和 6 同时完美对齐！', 14.5, C.ink, {w:'900', a:'start'});
+  return wrap(X(100) + MX, rb + 88, s);
+}
+function buildL4(){
+  return tailMain(2, 92,
+    '5 和 6 在 90 完美对齐，再各自多出「+2」个小尾巴 → 92！',
+    '剩 2 的“尾巴”要一起加上去。');
+}
+function buildL5(){
+  return gapMain(1, 89,
+    '离 90 还差 1 个 → 从 90 挖掉 1 → 89！',
+    '5 个一数剩 4（差 1），6 个一数剩 5（差 1）。');
+}
+function buildL6(){
+  return convPanel([
+      {size:5, filled:3, color:C.orange, note:'5 个一数：差 2 = 剩 3（再补 2 个才满一堆）'},
+      {size:6, filled:4, color:C.red,    note:'6 个一数：剩 4 = 差 2（再补 2 个才满一堆）'}
+    ], '👀 变装一下：其实它们“都差 2”！') +
+    '<div style="height:14px"></div>' +
+    gapMain(2, 88,
+      '大家都差 2 → 从 90 挖掉 2 → 88！',
+      '5 个一数剩 3（差 2），6 个一数剩 4（差 2）。');
+}
+function buildL7(){
+  return convPanel([
+      {size:5, filled:3, color:C.orange, note:'5 个一数：剩 3 = 差 2（再补 2 个才满一堆）'},
+      {size:6, filled:3, color:C.red,    note:'6 个一数：差 3 = 剩 3（再补 3 个才满一堆）'}
+    ], '👀 变装一下：其实它们“都剩 3”！') +
+    '<div style="height:14px"></div>' +
+    tailMain(3, 93,
+      '大家都剩 3 → 90 + 3 = 93！',
+      '5 个一数剩 3（差 2），6 个一数剩 3（差 3）。');
+}
+function buildL8(){
+  var span = 60, y3 = 64, y4 = y3 + H + 10, y5 = y4 + H + 10, rb = y5 + H;
+  var s = '';
+  s += blocks(y3, 0, span, 3, C.blue, '3');
+  s += blocks(y4, 0, span, 4, C.green, '4');
+  s += blocks(y5, 0, span, 5, C.orange, '5');
+  s += vdash(X(span), y3, rb, C.purple);
+  s += star(X(span), rb + 26, span + ' ✓ 三车相撞', C.green, {starsz:24});
+  s += t(MX, rb + 62, '3、4、5 三列车厢，第一次一起对齐在 60！', 14.5, C.ink, {w:'900', a:'start'});
+  s += t(MX, rb + 84, '（60 就是 3、4、5 的最小公倍数）', 13, C.sub, {w:'700', a:'start'});
+  return wrap(X(span) + MX + 30, rb + 104, s);
+}
+function buildL9(){
+  var span = 60, tail = 1, ans = 61;
+  var y3 = 64, y4 = y3 + H + 10, y5 = y4 + H + 10, rb = y5 + H;
+  var s = '';
+  s += blocks(y3, 0, span, 3, C.blue, '3');
+  s += blocks(y4, 0, span, 4, C.green, '4');
+  s += blocks(y5, 0, span, 5, C.orange, '5');
+  [y3, y4, y5].forEach(function(y){
+    s += box(X(span), y, tail*U, H, C.rose);
+    s += t(X(span) + tail*U/2, y - 7, '+1', 13, C.rose, {w:'900'});
+  });
+  s += vdash(X(span), y3, rb, '#cbd5e1');
+  s += vdash(X(ans), y3, rb, C.green);
+  s += star(X(ans), rb + 26, ans + ' ✓ 答案', C.green, {starsz:24});
+  s += t(MX, rb + 62, '三列车厢在 60 对齐，再各自多 1 个 → 61！', 14.5, C.ink, {w:'900', a:'start'});
+  return wrap(X(ans) + MX + 40, rb + 84, s);
+}
+
+/* ---------- 题目数据 ---------- */
+var LEVELS = [
+  { n:1, stage:'第一阶段 · 找朋友', ansNum:'30、60、90……', ansNote:'每 30 个，5 和 6 就完美对齐一次，所以 30、60、90……都可能！', build:buildL1,
+    q:'有一筐苹果，5个5个数刚好平均分，6个6个数刚好平均分，苹果可能有多少个？' },
+  { n:2, stage:'第一阶段 · 找朋友', ansNum:'30 个（最少）', ansNote:'第一次对齐的 30，就是最少的那筐苹果。', build:buildL2,
+    q:'有一筐苹果，5个5个数刚好平均分，6个6个数刚好平均分，苹果最少有多少个？' },
+  { n:3, stage:'第一阶段 · 找朋友', ansNum:'90 个', ansNote:'80～100 之间，只有 90 能让 5 和 6 都刚好分完。', build:buildL3,
+    q:'有一筐苹果，5个5个数刚好平均分，6个6个数刚好平均分，苹果总数多于80、少于100，苹果有多少个？' },
+  { n:4, stage:'第二阶段 · 加减尾巴', ansNum:'92 个', ansNote:'90 处对齐，再加大家共同的 2 个尾巴 = 92。', build:buildL4,
+    q:'有一筐苹果，5个5个数剩2个，6个6个数剩2个，苹果总数多于80、少于100，苹果有多少个？' },
+  { n:5, stage:'第二阶段 · 加减尾巴', ansNum:'89 个', ansNote:'离 90 还差 1 个，从 90 挖掉 1 = 89。', build:buildL5,
+    q:'有一筐苹果，5个5个数还差1个，6个6个数还差1个，苹果总数多于80、少于100，苹果有多少个？' },
+  { n:6, stage:'第三阶段 · 变装游戏', ansNum:'88 个', ansNote:'差 2 = 剩 3，剩 4 = 差 2，大家都差 2 → 90 − 2 = 88。', build:buildL6,
+    q:'有一筐苹果，5个5个数还差2个，6个6个数还剩余4个，苹果总数多于80、少于100，苹果有多少个？' },
+  { n:7, stage:'第三阶段 · 变装游戏', ansNum:'93 个', ansNote:'剩 3 = 差 2，差 3 = 剩 3，大家都剩 3 → 90 + 3 = 93。', build:buildL7,
+    q:'有一筐苹果，5个5个数还剩余3个，6个6个数还差3个，苹果总数多于80、少于100，苹果有多少个？' },
+  { n:8, stage:'第四阶段 · 三车相撞', ansNum:'60 个', ansNote:'3、4、5 三列在 60 处第一次完美对齐。', build:buildL8,
+    q:'有一筐苹果，3个3个数刚好平均分，4个4个数刚好平均分，5个5个数刚好平均分，苹果总数少于100个，苹果有多少个？' },
+  { n:9, stage:'第四阶段 · 三车相撞', ansNum:'61 个', ansNote:'三列在 60 对齐，再各自多 1 个 = 61。', build:buildL9,
+    q:'有一筐苹果，3个3个数剩1个，4个4个数剩1个，5个5个数剩1个，苹果总数少于100个，苹果有多少个？' }
+];
+
+/* ---------- 状态 ---------- */
+var LS_KEY = 'applePiles.progress.v1';
+var cur = 0;
+var revealed = {};
+(function load(){
+  try{
+    var d = JSON.parse(localStorage.getItem(LS_KEY)) || {};
+    if(typeof d.cur === 'number'){ cur = d.cur; }
+    if(d.revealed){ revealed = d.revealed; }
+  }catch(e){}
+})();
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({cur:cur, revealed:revealed})); }catch(e){}
+}
+
+/* ---------- DOM ---------- */
+var levelsEl   = document.getElementById('levels');
+var stageEl    = document.getElementById('stage');
+var qEl        = document.getElementById('q');
+var revealBtn  = document.getElementById('revealBtn');
+var answerEl   = document.getElementById('answer');
+var ansNumEl   = document.getElementById('ansNum');
+var ansNoteEl  = document.getElementById('ansNote');
+var diagramEl  = document.getElementById('diagram');
+var prevBtn    = document.getElementById('prevBtn');
+var nextBtn    = document.getElementById('nextBtn');
+var curNumEl   = document.getElementById('curNum');
+var celebrateEl= document.getElementById('celebrate');
+
+/* ---------- 渲染 ---------- */
+function renderLevels(){
+  var html = '';
+  LEVELS.forEach(function(L, i){
+    var done = revealed[L.n];
+    html += '<button class="lv' + (i === cur ? ' on' : '') + (done ? ' done' : '') + '" data-i="' + i + '">' +
+            '<span>' + L.n + '</span>' + (done ? '<em>✅</em>' : '') + '</button>';
+  });
+  levelsEl.innerHTML = html;
+}
+function renderLevel(){
+  var L = LEVELS[cur];
+  stageEl.textContent = '第 ' + L.n + ' 关 · ' + L.stage;
+  qEl.textContent = L.q;
+  curNumEl.textContent = L.n;
+
+  var isRev = !!revealed[L.n];
+  revealBtn.style.display = isRev ? 'none' : '';
+  answerEl.classList.toggle('show', isRev);
+  if(isRev){
+    ansNumEl.textContent = L.ansNum;
+    ansNoteEl.textContent = L.ansNote;
+    diagramEl.innerHTML = L.build();
+  } else {
+    diagramEl.innerHTML = '';
+  }
+
+  prevBtn.disabled = (cur === 0);
+  nextBtn.disabled = (cur === LEVELS.length - 1);
+
+  var all = LEVELS.every(function(x){ return revealed[x.n]; });
+  celebrateEl.style.display = all ? 'block' : 'none';
+}
+function renderAll(){ renderLevels(); renderLevel(); }
+
+/* ---------- 事件 ---------- */
+revealBtn.addEventListener('click', function(){
+  revealed[LEVELS[cur].n] = true;
+  save();
+  renderAll();
+  /* 重触发一次弹入动画 */
+  answerEl.classList.remove('show');
+  void answerEl.offsetWidth;
+  answerEl.classList.add('show');
+});
+
+levelsEl.addEventListener('click', function(e){
+  var b = e.target.closest('.lv'); if(!b) return;
+  cur = parseInt(b.dataset.i, 10);
+  save();
+  renderAll();
+});
+prevBtn.addEventListener('click', function(){ if(cur > 0){ cur--; save(); renderAll(); } });
+nextBtn.addEventListener('click', function(){ if(cur < LEVELS.length - 1){ cur++; save(); renderAll(); } });
+
+/* ---------- 启动 ---------- */
+renderAll();
+
+})();
+</script>
+</body>
+</html>
